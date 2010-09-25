@@ -142,9 +142,23 @@ class Interfaz(object):
             Play the next Song
         """
 
-        self.logic.stop(self.next)
-        self.logic.play(self.next)
+        self.logic.stop()
+        self.set_next_index()
+        song = self.song_to_play()
+        self.logic.play(song)
 
+    def get_current_index(self):
+        return self.iter[0][0]
+
+    def get_list_len(self):
+        return len(self.store)
+
+    def set_next_index(self, index):
+        index = self.get_current_index()
+        if index < self.get_list_len() - 1:
+            self.list.set_cursor(index + 1)
+        else:
+            self.list.set_cursor(0)
 
     def song_to_play(self):
         """
@@ -200,9 +214,15 @@ class Interfaz(object):
         return songToPlay
 
     def check_exists(self, path):
+        """
+            Check if exists a path in the file system
+        """
         return self.logic.check_exists(path)
 
     def load_file(self, sender):
+        """
+            Show a file dialog
+        """
         self.filedl.set_select_multiple(True)
         self.filedl.show()
 
@@ -217,11 +237,11 @@ class Interfaz(object):
 
     def load_dir(self, sender):
         if sender != self.copy:
-            self.dirdl.set_title("Cargar Temas")
-            self.dirdl.show()
+            self.dir_dl.set_title("Cargar Temas")
+            self.dir_dl.show()
         else:
-            self.dirdl.set_title("Copiar Tema")
-            self.dirdl.show()
+            self.dir_dl.set_title("Copiar Tema")
+            self.dir_dl.show()
 
     def key_press(self, sender, key):
         if key.keyval == 65535:
@@ -230,8 +250,14 @@ class Interfaz(object):
             self.play(self.keyPress)
 
     def delete_song(self):
+        """
+            Delete a song from db and treeview
+        """
+        #delete the song from db
         self.iter = self.list.get_cursor()
-        self.dba.deleteSong(self.store.get_value(self.store.get_iter(self.iter[0][0]),0))
+        song = self.store.get_value(self.store.get_iter(self.iter[0][0]),0)
+        self.logic.delete_song(song)
+        #remove the song from the treeview
         path = self.store.get_path(self.store.get_iter(self.iter[0][0]))
         treeiter = self.store.get_iter(path)
         self.store.remove(treeiter)
@@ -244,21 +270,20 @@ class Interfaz(object):
 
     def initialize_songs(self):
         self.dba.createTable()
-        tagedSongs = self.dba.fetchSongs()
-        self.list_load(tagedSongs)
+        taged_songs = self.logic.fetch_all_songs()
+        self.list_load(taged_songs)
 
     #Actualiza los archivos de la base de datos
-    def update_songs(self, sender, destroyer=None):
-        self.dirdl.hide()
-        if self.dirdl.get_filename():
-            if self.dirdl.get_title() == "Cargar Temas":
-                dir = self.dirdl.get_filename()
-                self.dba.insertSongs(self.dba.listDir(dir))
-                songs = []
-                tagedSongs = self.dba.fetchSongs()
+    def add_songs(self, sender, destroyer=None):
+        self.dir_dl.hide()
+        if self.dir_dl.get_filename():
+            if self.dir_dl.get_title() == "Cargar Temas":
+                dir = self.dir_dl.get_filename()
+                self.logic.add_songs(self.dba.listDir(dir))
+                tagedSongs = self.logic.fetch_all_songs()
                 self.list_load(tagedSongs)
             else:
-                dir = self.dirdl.get_filename()
+                dir = self.dir_dl.get_filename()
                 self.copySong(dir)
         return True
 
@@ -270,10 +295,9 @@ class Interfaz(object):
 
     def finder(self, sender, key):
         if key.keyval == 65293 or key.keyval == 65421:
-            songs = []
-            tagedSongs = self.dba.fetchMany(self.finderBox.get_text())
+            taged_songs = self.logic.find(self.finder_box.get_text())
             self.store.clear()
-            self.list_load(tagedSongs)
+            self.list_load(taged_songs)
 
     def volume_changed(self, sender, x ,y):
         self.logic.change_volume(self.volume_bar.get_value() /100)
@@ -292,6 +316,7 @@ class Interfaz(object):
 
     def add_radio(self,sender):
         self.radioUriWindow.show()
+
 
     def music_manager(self, sender):
         self.radioButton.show()

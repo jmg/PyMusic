@@ -31,7 +31,7 @@ class dataBase(threading.Thread):
                    )"
         self.query.execute(sintax)
 
-    def insertSongs(self, listsongs):
+    def insert_songs(self, listsongs):
         for tag in listsongs:
             try:
                 sintax = "select * from songs where song = \"" + tag[0] + "\""
@@ -53,7 +53,6 @@ class dataBase(threading.Thread):
         sintax = "select song, interpret, album, year, id from songs order by song"
         self.query.execute(sintax)
         songs = self.query.fetchall()
-        print songs
         return songs
 
     #lista un directorio recursivamente
@@ -102,15 +101,13 @@ class dataBase(threading.Thread):
                     or album like '%" + condition + "%' \
                     order by song \
                     "
-        self.query.execute(sintax)
-        t1 = time.time()
-        songs = self.query.fetchManyWithId("")
-        t2 = time.time()
-        songs = pickle.dumps(songs)
-        self.cache.mc.set_multi(dict(zip(songs[0], songs)))
-        print songs
-        print "la consulta tardo: " + str(t2 - t1)
-        return songs
+        songs = self.query.execute(sintax)
+        #t1 = time.time()
+        #songs = self.query.fetchManyWithId("")
+        #t2 = time.time()
+        #songs = pickle.dumps(songs)
+        #self.cache.mc.set_multi(dict(zip(songs[0], songs)))
+        return songs.fetchall()
 
     #DBA para las radios
 

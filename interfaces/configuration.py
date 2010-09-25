@@ -13,7 +13,7 @@ binding_dict = {
     'volumeChanged' :           "volume_changed",
     'Resume' :                  "resume",
     'Radios':                   "radio_manager",
-    'selectedDir' :             "update_songs",
+    'selectedDir' :             "add_songs",
     'addRadio':                 "add_radio",
     'Musica':                   "music_manager",
     'addUri':                   "add_uri",

@@ -2,12 +2,14 @@
 import random
 import os
 from player.gstreamer import mp3player
+import db
 
 class Player_Logic(object):
 
     player = mp3player()
     MUSIC = 2
     mode = MUSIC
+    db = db.dataBase()
 
     def play(self, song):
 
@@ -43,13 +45,6 @@ class Player_Logic(object):
         if self.player.isPlaying():
             self.player.pause()
 
-    def next(self):
-
-        if not self.randomize and self.iter[0][0] < len(self.store) - 1:
-            self.list.set_cursor(self.iter[0][0]+1)
-        else:
-            self.list.set_cursor(0)
-
     def _generate_id(self):
         return random.randint(0,1000000000)
 
@@ -67,5 +62,14 @@ class Player_Logic(object):
             return False
         return True
 
-    def change_volume(value):
+    def change_volume(self, value):
         self.player.change_volume(value)
+
+    def find(self, filter):
+        return self.db.fetchMany(filter)
+
+    def fetch_all_songs(self):
+        return self.db.fetchSongs()
+
+    def add_songs(self, songs):
+        self.ds.insert_songs(songs)
