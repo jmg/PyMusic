@@ -2,33 +2,23 @@
 import random
 import os
 from player.gstreamer import mp3player
-import db
+from data.db import dataBase
 
 class Player_Logic(object):
 
     player = mp3player()
     MUSIC = 2
     mode = MUSIC
-    db = db.dataBase()
+    db = dataBase()
 
-    def play(self, song):
+    def play(self, song, next=None):
 
         self.id = self._generate_id()
         self.player.stop()
 
-        self.next = None
         #if not self.randomize or self.mode == self.RADIO:
-        self.player.play(song)
-        #else:
-        #    self.player.play(self.randomSongToPlay(), self.next, self.id)
-
-        #self.showPos = gstreamer.showPos(self.clock, self.player, self.entry, self.titleOfSong, self.id)
-        #self.showPos.start()
-
-        #self.moveBar = gstreamer.moveBar(self.seekBar, self.player, self.id)
-        #self.moveBar.start()
-
-        #self.window.set_title(self.titleOfSong)
+        self.player.play(song, next, self.id)
+        return self.id
 
     def stop(self):
 
@@ -58,7 +48,6 @@ class Player_Logic(object):
 
     def check_exists(self, path):
         if not os.path.exists(path) and self.mode == self.MUSIC:
-            self.deleteSong()
             return False
         return True
 
@@ -72,4 +61,4 @@ class Player_Logic(object):
         return self.db.fetchSongs()
 
     def add_songs(self, songs):
-        self.ds.insert_songs(songs)
+        self.db.insert_songs(songs)
