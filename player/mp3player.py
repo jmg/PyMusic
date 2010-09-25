@@ -134,8 +134,8 @@ class mp3player:
 
         return mins+":"+segs+"."+milisegs
 
-    def changeVolume(self, newValue):
-        pygame.mixer.music.set_volume(newValue)
+    def change_volume(self, value):
+        pygame.mixer.music.set_volume(value)
 
     def isPlaying(self):
         if self.playing:

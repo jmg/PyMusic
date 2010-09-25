@@ -4,6 +4,9 @@ import os
 import dircache
 import tags
 import threading
+import cache
+import time
+import pickle
 
 class dataBase(threading.Thread):
 
@@ -14,6 +17,7 @@ class dataBase(threading.Thread):
         #/home/jm/Documentos/PyMp3/
         self.conection = sqlite.connect('MusicaInYou.db')
         self.query = self.conection.cursor()
+        self.cache = cache.Cache()
 
     #DBA Para la Musica
 
@@ -48,7 +52,9 @@ class dataBase(threading.Thread):
     def fetchSongs(self):
         sintax = "select song, interpret, album, year, id from songs order by song"
         self.query.execute(sintax)
-        return self.query.fetchall()
+        songs = self.query.fetchall()
+        print songs
+        return songs
 
     #lista un directorio recursivamente
     def listDir(self, dir):
@@ -97,7 +103,14 @@ class dataBase(threading.Thread):
                     order by song \
                     "
         self.query.execute(sintax)
-        return self.query.fetchall()
+        t1 = time.time()
+        songs = self.query.fetchManyWithId("")
+        t2 = time.time()
+        songs = pickle.dumps(songs)
+        self.cache.mc.set_multi(dict(zip(songs[0], songs)))
+        print songs
+        print "la consulta tardo: " + str(t2 - t1)
+        return songs
 
     #DBA para las radios
 
@@ -236,7 +249,8 @@ class dataBase(threading.Thread):
         sintax = "select song from songs inner join IndexSongs on \
         songs.id = IndexSongs.idSong where IndexSongs.currentlyList = 1"
         self.query.execute(sintax)
-        return self.query.fetchall()
+        songs = self.query.fetchall()
+        return
 
     def closeConection(self):
         self.conection.close()

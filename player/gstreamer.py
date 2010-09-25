@@ -74,7 +74,7 @@ class mp3player:
     def seek(self, position):
         self.player.seek(1.0, gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, gst.SEEK_TYPE_SET, position, gst.SEEK_TYPE_NONE,0)
 
-    def change_volume(self, volume):
+    def changeVolume(self, volume):
         self.player.set_property("volume",volume)
 
     def isPlaying(self):

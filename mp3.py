@@ -6,8 +6,10 @@ import sys
 import db
 import os
 import tags
-import random
+
 import console
+from logic.player_logic import Player_Logic
+from interfaces.configuration import binding_dict
 
 class Interfaz(object):
 
@@ -18,92 +20,56 @@ class Interfaz(object):
     MUSIC = 1
     RADIO = 2
     mode = MUSIC
+    logic = Player_Logic()
 
     def __init__(self):
+        """
+            Initialize the Interfaz
+        """
 
         self.builder = gtk.Builder()
-        #/home/jm/Documentos/PyMp3/
         self.builder.add_from_file('interfaces/minimal.xml')
-        self.builder.connect_signals({
-        'play' : self.play ,
-        'stop' : self.stop ,
-        'pause' : self.pause ,
-        'LoadFIle' : self.loadFile ,
-        'selectFile' : self.selectFile ,
-        'key' : self.keyPress ,
-        'DoubleClick' : self.doubleClick,
-        'finderKeyPressed' : self.finder,
-        'selectDir' : self.loadDir,
-        'volumeChanged' : self.volumeChanged,
-        'Resume' : self.resume,
-        'Radios': self.radioManager,
-        'selectedDir' : self.updateSongs,
-        'addRadio': self.addRadio,
-        'Musica': self.musicManager,
-        'addUri': self.addUri,
-        'cancelUri': self.cancelUri,
-        'seek' : self.seek,
-        'menu_randomizer' : self.randomizer,
-        'cancelRandomList' : self.cancelRandomList,
-        'aceptRandomList' : self.aceptRandomList,
-        'randomList' : self.randomPlay,
-        'scoreAccept' : self.scoreAccept,
-        'scoreCancel' : self.scoreCancel,
-        'RankingShow' : self.rankingShow
-        })
+
+        self.builder.connect_signals(dict([(k ,getattr(self, v)) for k,v in binding_dict.iteritems()]))
 
         self.window = self.builder.get_object('window1')
         self.entry = self.builder.get_object('entry1')
         self.clock = self.builder.get_object('entry2')
-        self.filedl = self.builder.get_object('filechooserdialog1')
+        self.file_dl = self.builder.get_object('filechooserdialog1')
         self.list = self.builder.get_object('treeview2')
-        self.finderBox = self.builder.get_object('finder')
-        self.dirdl = self.builder.get_object('filechooserdialog2')
-        self.playButton = self.builder.get_object('Play')
-        self.volumeBar = self.builder.get_object('volumen')
-        self.pauseButton = self.builder.get_object('Pause')
-        self.resumeButton = self.builder.get_object('Resume')
-        self.radioButton = self.builder.get_object('Radios')
-        self.addRadioButton = self.builder.get_object('AddRadio')
-        self.addDirectoryButton = self.builder.get_object('UpdateSongs')
-        self.musicButton = self.builder.get_object('Musica')
-        self.radioUriWindow = self.builder.get_object('RadioUriWindow')
-        self.radioUri = self.builder.get_object('radioUri')
-        self.seekBar = self.builder.get_object('seekBar')
-        self.randomListWindow = self.builder.get_object('RandomListWindow')
-        self.randomListPath = self.builder.get_object('RandomListPath')
-        self.randomListSize = self.builder.get_object('RandomListSize')
-        self.randomFilter = self.builder.get_object('RandomizeFilter')
-        self.scoreWindow = self.builder.get_object('scoreWindow')
-        self.scoreCombo = self.builder.get_object('scoreCombo')
-        self.scoresViewWindow = self.builder.get_object('scoresViewWindow')
-        self.listRanking = self.builder.get_object('RankingGrid')
+        self.finder_box = self.builder.get_object('finder')
+        self.dir_dl = self.builder.get_object('filechooserdialog2')
+        self.play_nutton = self.builder.get_object('Play')
+        self.volume_bar = self.builder.get_object('volumen')
+        self.pause_button = self.builder.get_object('Pause')
+        self.resume_button = self.builder.get_object('Resume')
+        self.radio_button = self.builder.get_object('Radios')
+        self.add_radio_button = self.builder.get_object('AddRadio')
+        self.add_directory_button = self.builder.get_object('UpdateSongs')
+        self.music_button = self.builder.get_object('Musica')
+        self.radio_uri_window = self.builder.get_object('RadioUriWindow')
+        self.radio_uri = self.builder.get_object('radioUri')
+        self.seek_bar = self.builder.get_object('seekBar')
+        self.random_list_window = self.builder.get_object('RandomListWindow')
+        self.random_list_path = self.builder.get_object('random_list_path')
+        self.random_list_size = self.builder.get_object('random_list_size')
+        self.random_filter = self.builder.get_object('RandomizeFilter')
+        self.score_window = self.builder.get_object('score_window')
+        self.score_combo = self.builder.get_object('score_combo')
+        self.scores_view_window = self.builder.get_object('scores_view_window')
+        self.list_ranking = self.builder.get_object('RankingGrid')
 
-
+        #extra binding signals
         self.window.connect("delete_event", gtk.main_quit)
         self.window.connect("destroy", gtk.main_quit)
 
-        #conecta los eventos de cierre de widget con metodos q los ocultan en vez de destruirlos
-        self.filedl.connect("delete_event", self.selectFile)
-        self.filedl.connect("destroy", self.selectFile)
-        self.dirdl.connect("delete_event", self.updateSongs)
-        self.dirdl.connect("destroy", self.updateSongs)
-        self.radioUriWindow.connect("delete_event", self.cancelUri)
-        self.radioUriWindow.connect("destroy", self.cancelUri)
-        self.randomListWindow.connect("delete_event", self.cancelRandomList)
-        self.randomListWindow.connect("destroy", self.cancelRandomList)
-        self.scoreWindow.connect("delete_event", self.scoreCancel)
-        self.scoreWindow.connect("destroy", self.scoreCancel)
-        self.scoresViewWindow.connect("delete_event", self.hideRanking)
-        self.scoresViewWindow.connect("destroy", self.hideRanking)
-
-        self.rank = RankingDataView(self.listRanking)
+        self.rank = RankingDataView(self.list_ranking)
 
         self.showPos = None
         self.textMovement = None
         self.moveBar = None
 
-        self.popup = Menu(self.scoreSong, self.copy)
+        self.popup = Menu(self.score_song, self.copy)
 
         #establece el modelo y las columnas del GtktreeView
         self.list.set_model(self.store)
@@ -126,70 +92,65 @@ class Interfaz(object):
         self.col4.set_max_width(200)
         self.col5.set_max_width(100)
 
-        self.initializeSongs()
-        self.initializeRadios()
-        self.initializePunctuations()
+        self.initialize_songs()
+        self.initialize_radios()
+        self.initialize_punctuations()
         self.window.show()
 
     def play(self, sender):
+        """
+            Play a song
+        """
+        song = self.song_to_play()
+        self.logic.play(song)
 
-        self.id = self.generateId()
-
-        self.player.stop()
-
-        if not self.randomize or self.mode == self.RADIO:
-            self.player.play(self.songToPlay(), self.next, self.id)
-        else:
-            self.player.play(self.randomSongToPlay(), self.next, self.id)
-
-        self.showPos = gstreamer.showPos(self.clock, self.player, self.entry, self.titleOfSong, self.id)
-        self.showPos.start()
-
-        self.moveBar = gstreamer.moveBar(self.seekBar, self.player, self.id)
-        self.moveBar.start()
-
-        self.window.set_title(self.titleOfSong)
-
-        self.pauseButton.show()
-        self.resumeButton.hide()
-
-
-    def generateId(self):
-        return random.randint(0,1000000000)
+        self.pause_button.show()
+        self.resume_button.hide()
 
     def stop(self, sender):
-        if self.player.isPlaying():
-            self.player.stop()
-            self.pauseButton.show()
-            self.resumeButton.hide()
+        """
+            Stop playing a song
+        """
+        self.logic.stop()
+
+        self.pause_button.show()
+        self.resume_button.hide()
 
     def resume(self, sender):
-        if not self.player.isPlaying():
-            self.player.resume()
-            self.resumeButton.hide()
-            self.pauseButton.show()
+        """
+            Resume a song
+        """
+        self.logic.resume()
+
+        self.resume_button.hide()
+        self.pause_button.show()
 
     def pause(self, sender):
-        if self.player.isPlaying():
-            self.player.pause()
-            self.pauseButton.hide()
-            self.resumeButton.show()
+        """
+            Pause a song
+        """
+        self.logic.pause()
+
+        self.pause_button.hide()
+        self.resume_button.show()
 
     def seek(self, sender, value, unknow):
         pass
 
     def next(self):
+        """
+            Play the next Song
+        """
 
-        self.stop(self.next)
+        self.logic.stop(self.next)
+        self.logic.play(self.next)
 
-        if not self.randomize and self.iter[0][0] < len(self.store) - 1:
-            self.list.set_cursor(self.iter[0][0]+1)
-        else:
-            self.list.set_cursor(0)
 
-        self.play(self.next)
+    def song_to_play(self):
+        """
+            Select the current song to play
+        """
 
-    def songToPlay(self):
         self.iter = self.list.get_cursor()
         if self.iter != (None, None):
             iter = self.iter[0][0]
@@ -200,7 +161,7 @@ class Interfaz(object):
         songToPlay = self.store.get_value(self.store.get_iter(iter),0)
         self.titleOfSong = self.store.get_value(self.store.get_iter(iter),1)
         self.entry.set_text(self.titleOfSong)
-        while not self.checkExists(songToPlay):
+        while not self.check_exists(songToPlay):
             if self.iter[0][0] < len(self.store) - 1:
                 self.list.set_cursor(self.iter[0][0] + 1)
             else:
@@ -216,7 +177,16 @@ class Interfaz(object):
         return songToPlay
 
     def randomSongToPlay(self):
-        randomSongToPlay = self.randomSong()
+        """
+            Select a random song to play
+        """
+        try:
+            current_index = self.iter[0][0]
+        except:
+            current_index = 0
+
+        randomSongToPlay = self.logic.random_song(current_index, len(self.store) - 1)
+
         songToPlay = self.store.get_value(self.store.get_iter(randomSongToPlay),0)
         self.titleOfSong = self.store.get_value(self.store.get_iter(randomSongToPlay),1)
         self.list.set_cursor(randomSongToPlay)
@@ -229,40 +199,23 @@ class Interfaz(object):
             self.entry.set_text(self.titleOfSong)
         return songToPlay
 
-    def checkExists(self, path):
-        if not os.path.exists(path) and self.mode == self.MUSIC:
-            self.deleteSong()
-            return False
-        return True
+    def check_exists(self, path):
+        return self.logic.check_exists(path)
 
-    def randomSong(self):
-        max = len(self.store) - 1
-        try:
-            actual = self.iter[0][0]
-        except:
-            actual = 0
-
-        if max > 1:
-            randomSong = random.randint(0,max)
-            while randomSong == actual:
-                randomSong = random.randint(0,max)
-            return randomSong
-        return False
-
-    def loadFile(self, sender):
+    def load_file(self, sender):
         self.filedl.set_select_multiple(True)
         self.filedl.show()
 
-    def selectFile(self, sender, destroyer=None):
+    def select_file(self, sender, destroyer=None):
         self.filedl.hide()
         if self.filedl.get_filename():
             fullPath = str(self.filedl.get_filename())
             dir = fullPath.rpartition("/")
             self.entry.set_text(dir[2])
-            self.listLoad(self.filedl.get_filenames())
+            self.list_load(self.filedl.get_filenames())
         return True
 
-    def loadDir(self, sender):
+    def load_dir(self, sender):
         if sender != self.copy:
             self.dirdl.set_title("Cargar Temas")
             self.dirdl.show()
@@ -270,32 +223,32 @@ class Interfaz(object):
             self.dirdl.set_title("Copiar Tema")
             self.dirdl.show()
 
-    def keyPress(self, sender, key):
+    def key_press(self, sender, key):
         if key.keyval == 65535:
             self.deleteSong()
         if key.keyval == 65293 or key.keyval == 65421 or key.keyval == 32:
             self.play(self.keyPress)
 
-    def deleteSong(self):
+    def delete_song(self):
         self.iter = self.list.get_cursor()
         self.dba.deleteSong(self.store.get_value(self.store.get_iter(self.iter[0][0]),0))
         path = self.store.get_path(self.store.get_iter(self.iter[0][0]))
         treeiter = self.store.get_iter(path)
         self.store.remove(treeiter)
 
-    def doubleClick(self, sender, click):
+    def double_click(self, sender, click):
         if click.button == 3:
             self.popup.makeMenu(click)
         if click.type == gtk.gdk._2BUTTON_PRESS:
-            self.play(self.doubleClick)
+            self.play(self.double_click)
 
-    def initializeSongs(self):
+    def initialize_songs(self):
         self.dba.createTable()
         tagedSongs = self.dba.fetchSongs()
-        self.listLoad(tagedSongs)
+        self.list_load(tagedSongs)
 
     #Actualiza los archivos de la base de datos
-    def updateSongs(self, sender, destroyer=None):
+    def update_songs(self, sender, destroyer=None):
         self.dirdl.hide()
         if self.dirdl.get_filename():
             if self.dirdl.get_title() == "Cargar Temas":
@@ -303,14 +256,14 @@ class Interfaz(object):
                 self.dba.insertSongs(self.dba.listDir(dir))
                 songs = []
                 tagedSongs = self.dba.fetchSongs()
-                self.listLoad(tagedSongs)
+                self.list_load(tagedSongs)
             else:
                 dir = self.dirdl.get_filename()
                 self.copySong(dir)
         return True
 
     #carga los archivos en el gtktreeview
-    def listLoad(self, songs):
+    def list_load(self, songs):
         for song in songs:
             dirSong = song[0].rpartition("/")
             self.store.append([dirSong[0]+"/"+dirSong[2],dirSong[2], song[1], song[2], song[3], song[4]])
@@ -320,12 +273,12 @@ class Interfaz(object):
             songs = []
             tagedSongs = self.dba.fetchMany(self.finderBox.get_text())
             self.store.clear()
-            self.listLoad(tagedSongs)
+            self.list_load(tagedSongs)
 
-    def volumeChanged(self, sender, x ,y):
-        self.player.changeVolume(self.volumeBar.get_value() /100)
+    def volume_changed(self, sender, x ,y):
+        self.logic.change_volume(self.volume_bar.get_value() /100)
 
-    def radioManager(self, sender):
+    def radio_manager(self, sender):
         self.addRadioButton.show()
         self.musicButton.show()
 
@@ -337,10 +290,10 @@ class Interfaz(object):
         self.addDirectoryButton.hide()
         self.radioButton.hide()
 
-    def addRadio(self,sender):
+    def add_radio(self,sender):
         self.radioUriWindow.show()
 
-    def musicManager(self, sender):
+    def music_manager(self, sender):
         self.radioButton.show()
         self.addDirectoryButton.show()
 
@@ -352,78 +305,79 @@ class Interfaz(object):
         self.addRadioButton.hide()
         self.musicButton.hide()
 
-    def addUri(self, sender):
+    def add_uri(self, sender):
         self.dba.insertRadio(self.radioUri.get_text())
         self.store.clear()
         self.radioUri.set_text("")
         self.radioUriWindow.hide()
-        self.updateRadios()
+        self.update_radios()
 
-    def cancelUri(self, sender, destroyer=None):
+    def cancel_uri(self, sender, destroyer=None):
         self.radioUri.set_text("")
         self.radioUriWindow.hide()
         return True
 
-    def initializeRadios(self):
+    def initialize_radios(self):
         self.dba.createTableRadios()
-        self.updateRadios()
+        self.update_radios()
 
-    def updateRadios(self):
+    def update_radios(self):
         radios = self.dba.fetchRadios()
-        self.listLoad(radios)
+        self.list_load(radios)
 
     def randomizer(self, sender):
         self.randomListWindow.show()
 
-    def aceptRandomList(self, sender):
-        condition = self.randomFilter.get_text()
+    def accept_random_list(self, sender):
+        condition = self.random_filter.get_text()
+        condition = self.random_filter.get_text()
         songs = self.dba.fetchRandomSongs(condition)
-        path = self.randomListPath.get_text()
-        size = int(self.randomListSize.get_text())
+        path = self.random_list_path.get_text()
+        size = int(self.random_list_size.get_text())
         generatList = randomList(songs, size, path)
         generatList.start()
         print "generating list..."
         self.randomListWindow.hide()
 
-    def cancelRandomList(self, sender, destroyer=None):
+    def cancel_random_list(self, sender, destroyer=None):
         self.randomListWindow.hide()
         return True
 
-    def randomPlay(self, sender):
+    def random_play(self, sender):
         if self.randomize:
             self.randomize = False
         else:
             self.randomize = True
 
-    def initializePunctuations(self):
+    def initialize_punctuations(self):
         self.dba.createTablePunctuation()
 
-    def scoreSong(self, sender):
-        self.scoreWindow.show()
+    def score_song(self, sender):
+        self.score_window.show()
 
-    def scoreAccept(self, sender):
+    def score_accept(self, sender):
         iter = self.list.get_cursor()
         IdsongToScore = self.store.get_value(self.store.get_iter(iter[0][0]),5)
-        score = self.scoreCombo.get_text()
+        score = self.score_combo.get_text()
         self.dba.scoreSong(IdsongToScore, int(score))
-        self.scoreWindow.hide()
+        self.score_window.hide()
 
-    def scoreCancel(self, sender, destroyer = None):
-        self.scoreWindow.hide()
+    def score_cancel(self, sender, destroyer = None):
+        self.score_window.hide()
         return True
 
-    def rankingShow(self, sender):
+    def ranking_show(self, sender):
         self.rank.fillDataRanking(self.dba.fetchSongsScores())
-        self.scoresViewWindow.show()
+        self.scores_view_window.show()
 
-    def hideRanking(self, sender, destroyer = None):
-        self.scoresViewWindow.hide()
+    def hide_ranking(self, sender, destroyer = None):
+        self.scores_view_window.hide()
         return True
 
     def copy(self, sender):
         self.loadDir(self.copy)
 
-    def copySong(self, destination):
+    def copy_song(self, destination):
         iter = self.list.get_cursor()
         dir = self.store.get_value(self.store.get_iter(iter[0][0]),0)
         command = 'cp "'+ dir + '" "' + destination + '"'
@@ -461,14 +415,14 @@ class Menu:
 
 class RankingDataView:
 
-    def __init__(self, listRanking):
-        self.listRanking = listRanking
+    def __init__(self, list_ranking):
+        self.list_ranking = list_ranking
         self.storeRanking = gtk.ListStore(str,str)
-        self.listRanking.set_model(self.storeRanking)
+        self.list_ranking.set_model(self.storeRanking)
         self.col1 = gtk.TreeViewColumn("Tema", gtk.CellRendererText(), text=0)
         self.col2 = gtk.TreeViewColumn("Calificacion", gtk.CellRendererText(), text=1)
-        self.listRanking.append_column(self.col1)
-        self.listRanking.append_column(self.col2)
+        self.list_ranking.append_column(self.col1)
+        self.list_ranking.append_column(self.col2)
         self.col1.set_max_width(300)
         self.col2.set_max_width(100)
 
