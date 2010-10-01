@@ -4,7 +4,9 @@ import data.utils as utils
 
 class SongsFactory():
 
-    validFormats = ['.mp3','.wav','.wma']
+    def __init__(self):
+        self.conection = sqlite.connect('database/MusicaInYou.db')
+        self.query = self.conection.cursor()
 
     def _make_object(self, *args):
         song = Song(*args)
@@ -17,10 +19,6 @@ class SongsFactory():
             objetcs.append(obj)
         return objetcs
 
-    def __init__(self):
-        self.conection = sqlite.connect('database/MusicaInYou.db')
-        self.query = self.conection.cursor()
-
     def createTable(self):
         sintax = "CREATE TABLE if not exists songs (\
                   id       INTEGER PRIMARY KEY AUTOINCREMENT ,\
@@ -31,32 +29,31 @@ class SongsFactory():
                    )"
         self.query.execute(sintax)
 
-    def insert_songs(self, listsongs):
-        for song in listsongs:
-            try:
-                sintax = "select * from songs where song = \"" + song.path + "\""
+    def insert(self, song):
+        try:
+            sintax = "select * from songs where song = \"" + song.path + "\""
+            self.query.execute(sintax)
+            if not self.query.fetchone():
+                sintax = "insert into songs ('song', 'interpret', 'album', 'year') values \
+                 (\"" + song.path + "\", \"" + song.artist + "\", \"" + song.album + "\" , \"" + song.year + "\" )"
                 self.query.execute(sintax)
-                if not self.query.fetchone():
-                    sintax = "insert into songs ('song', 'interpret', 'album', 'year') values \
-                     (\"" + song.path + "\", \"" + song.artist + "\", \"" + song.album + "\" , \"" + song.year + "\" )"
-                    self.query.execute(sintax)
-            except Exception, e:
-                print e.message
+        except Exception, e:
+            print e.message
         self.conection.commit()
 
-    def fetchSong(self):
+    def fetch_one(self):
         sintax = "select song, interpret, album, year, id from songs order by song"
         self.query.execute(sintax)
         song = self.query.fetchone()
         return self._make_object(song)
 
-    def fetchSongs(self):
+    def fetch_all(self):
         sintax = "select id, song, interpret, album, year from songs order by song"
         self.query.execute(sintax)
         songs = self.query.fetchall()
         return self._make_objects(songs)
 
-    def fetchMany(self, condition):
+    def fetch_many(self, condition):
         sintax = "select id, song, interpret, album, year from songs where \
                     song like '%" + condition + "%' \
                     or interpret like '%" + condition + "%' \
@@ -67,8 +64,34 @@ class SongsFactory():
         songs = self.query.fetchall()
         return self._make_objects(songs)
 
+    def delete(self, song):
+        sintax = 'delete from songs where song = "' + song + '"'
+        self.query.execute(sintax)
+        self.conection.commit()
+
     def list_dir(self, dir):
         return self._make_objects(utils.list_dir(dir))
+
+
+    def scoreSong(self, idSong, score):
+        sintax = "select * from scores where idSong = " + idSong
+        self.query.execute(sintax)
+        if not self.query.fetchone():
+            print "new score!" , score
+            sintax = "insert into scores (idSong, score) values  \
+            (" + str(idSong) + "," + str(score) + ")"
+            self.query.execute(sintax)
+        else:
+            sintax = "update scores set score = " + str(score) + " \
+            where idSong = " + str(idSong)
+            self.query.execute(sintax)
+        self.conection.commit()
+
+    def fetch_all_scores(self):
+        sintax = "select song,score from songs inner join \
+                scores on scores.idsong = songs.id order by score desc"
+        self.query.execute(sintax)
+        return self.query.fetchall()
 
 
 

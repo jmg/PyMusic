@@ -4,19 +4,28 @@ import os
 from player.gstreamer import mp3player
 from data.db import dataBase
 from data.SongsFactory import SongsFactory
-from config import Modes
+from data.RadiosFactory import RadiosFactory
+from config import Modes, ManagerModes
 
 class PlayerLogic(object):
 
     player = mp3player()
     modes = Modes()
     mode = Modes.NORMAL_PLAY
+    man_modes = ManagerModes()
+    man_mode = ManagerModes.MUSIC
 
     def get_mode(self):
         return self.mode
 
     def set_mode(self, mode):
         self.mode = mode
+
+    def get_man_mode(self):
+        return self.man_mode
+
+    def set_man_mode(self, man_mode):
+        self.man_mode = man_mode
 
     def play(self, song, next=None):
 
@@ -27,17 +36,14 @@ class PlayerLogic(object):
         return self.id
 
     def stop(self):
-
         if self.player.isPlaying():
             self.player.stop()
 
     def resume(self):
-
         if not self.player.isPlaying():
             self.player.resume()
 
     def pause(self):
-
         if self.player.isPlaying():
             self.player.pause()
 
@@ -64,30 +70,37 @@ class PlayerLogic(object):
         self.player.change_volume(value)
 
 
-
 class PlayerDataLogic(object):
 
     db = dataBase()
     factory_songs = SongsFactory()
+    factory_radios = RadiosFactory()
 
     def createTable(self):
-        self.db.createTable()
+        self.factory_songs.createTable()
 
     def find(self, filter):
-        return self.factory_songs.fetchMany(filter)
+        return self.factory_songs.fetch_many(filter)
 
     def fetch_all_songs(self):
-        return self.factory_songs.fetchSongs()
+        return self.factory_songs.fetch_all()
 
     def add_songs(self, songs):
-        self.factory_songs.insert_songs(songs)
+        for song in songs:
+            self.factory_songs.insert(song)
 
-    def fetchRadios(self):
-        return []
+    def fetch_songs_scores(self):
+        return self.factory_songs.fetch_all_scores()
+
+    def create_table_radios(self):
+        self.factory_radios.create_table()
+
+    def fetch_radios(self):
+        return self.factory_radios.fetch_all()
+
+    def insert_radio(self, radio):
+        self.factory_radios.insert(radio)
 
     def list_dir(self, dir):
         return self.factory_songs.list_dir(dir)
-
-
-
 

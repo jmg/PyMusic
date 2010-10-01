@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 import pygtk
 import gtk
-from guiThreads import ShowPosThread, MoveBarThread, RandomListThread
-import threading
 import sys
-from data.db import dataBase
 import os
 
 import console
+from guiThreads import ShowPosThread, MoveBarThread, RandomListThread
 from logic.player_logic import PlayerLogic, PlayerDataLogic
 from interfaces.configuration import binding_dict
+from data.db import dataBase
 
 class MainWindow(object):
 
     store = gtk.ListStore(str,str,str,str,str,str)
-
     dba = dataBase()
     logic = PlayerLogic()
     data_logic = PlayerDataLogic()
@@ -304,6 +302,9 @@ class MainWindow(object):
 
     #carga los archivos en el gtktreeview
     def list_load(self, songs):
+        """
+            Load the threeview with a list of songs
+        """
         for song in songs:
             complete_name = song.path.rpartition("/")
             name = complete_name[2]
@@ -311,60 +312,75 @@ class MainWindow(object):
             self.store.append([song.path, name, song.artist, song.album, song.year, song.id])
 
     def finder(self, sender, key):
+        """
+            Find a list of songs by a condition
+        """
         if key.keyval == 65293 or key.keyval == 65421:
             taged_songs = self.data_logic.find(self.finder_box.get_text())
             self.store.clear()
             self.list_load(taged_songs)
 
     def volume_changed(self, sender, x ,y):
+        """
+            Handles the volume bar
+        """
         self.logic.change_volume(self.volume_bar.get_value() /100)
 
+    def btRadioMusic_click(self, sender):
+        """
+            Set the manager mode
+            [MUSIC / RADIO]
+        """
+        if self.logic.get_man_mode() == self.logic.man_modes.MUSIC:
+            self.radio_manager(sender)
+            self.logic.set_man_mode(self.logic.man_modes.RADIO)
+        elif self.logic.get_man_mode() == self.logic.man_modes.RADIO:
+            self.music_manager(sender)
+            self.logic.set_man_mode(self.logic.man_modes.MUSIC)
+
     def radio_manager(self, sender):
-        self.addRadioButton.show()
-        self.musicButton.show()
+        self.add_radio_button.show()
+        self.music_button.show()
 
         #vuelve a cargar las Radios
         self.store.clear()
-        self.initializeRadios()
-        self.mode = self.RADIO
+        self.initialize_radios()
 
-        self.addDirectoryButton.hide()
-        self.radioButton.hide()
+        self.add_directory_button.hide()
+        self.radio_button.hide()
 
     def add_radio(self,sender):
-        self.radioUriWindow.show()
-
+        self.radio_uri_window.show()
 
     def music_manager(self, sender):
-        self.radioButton.show()
-        self.addDirectoryButton.show()
+        self.radio_button.show()
+        self.add_directory_button.show()
 
         #vuelve a cargar la musica
         self.store.clear()
-        self.initializeSongs()
-        self.mode = self.MUSIC
+        self.initialize_songs()
 
-        self.addRadioButton.hide()
-        self.musicButton.hide()
+        self.add_radio_button.hide()
+        self.music_button.hide()
 
     def add_uri(self, sender):
-        self.dba.insertRadio(self.radioUri.get_text())
+        self.data_logic.insert_radio(self.radio_uri.get_text())
         self.store.clear()
-        self.radioUri.set_text("")
-        self.radioUriWindow.hide()
+        self.radio_uri.set_text("")
+        self.radio_uri_window.hide()
         self.update_radios()
 
     def cancel_uri(self, sender, destroyer=None):
-        self.radioUri.set_text("")
-        self.radioUriWindow.hide()
+        self.radio_uri.set_text("")
+        self.radio_uri_window.hide()
         return True
 
     def initialize_radios(self):
-        self.dba.createTableRadios()
+        self.data_logic.create_table_radios()
         self.update_radios()
 
     def update_radios(self):
-        radios = self.data_logic.fetchRadios()
+        radios = self.data_logic.fetch_radios()
         self.list_load(radios)
 
     def randomizer(self, sender):
@@ -409,7 +425,7 @@ class MainWindow(object):
         return True
 
     def ranking_show(self, sender):
-        self.rank.fillDataRanking(self.data_logic.fetchSongsScores())
+        self.rank.fillDataRanking(self.data_logic.fetch_songs_scores())
         self.scores_view_window.show()
 
     def hide_ranking(self, sender, destroyer = None):
@@ -417,7 +433,7 @@ class MainWindow(object):
         return True
 
     def copy(self, sender):
-        self.loadDir(self.copy)
+        self.load_dir(self.copy)
 
     def copy_song(self, destination):
         iter = self.list.get_cursor()
@@ -472,6 +488,6 @@ class RankingDataView:
     def fillDataRanking(self, songs):
         self.storeRanking.clear()
         for song in songs:
-            dirSong = song[0].rpartition("/")
-            self.storeRanking.append([dirSong[2], song[1]])
+            dirSong = song.path.rpartition("/")
+            self.storeRanking.append([dirSong[2], song.path])
 
