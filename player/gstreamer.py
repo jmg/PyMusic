@@ -74,7 +74,7 @@ class mp3player:
     def seek(self, position):
         self.player.seek(1.0, gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, gst.SEEK_TYPE_SET, position, gst.SEEK_TYPE_NONE,0)
 
-    def changeVolume(self, volume):
+    def change_volume(self, volume):
         self.player.set_property("volume",volume)
 
     def isPlaying(self):
@@ -128,90 +128,8 @@ class mp3player:
         return mins + ":" + segs #+ "." + milisegs
 
 
-class moveBar(threading.Thread):
-
-    def __init__(self, bar, player, id):
-        threading.Thread.__init__(self)
-        self.bar = bar
-        self.player = player
-        self.id = id
-
-        self.adjust = self.bar.get_adjustment()
-        self.mutex = threading.Lock()
-
-    def run(self):
-        duration = None
-        while not duration:
-            try:
-                duration = self.player.getSeekableDuration()
-            except:
-                pass
-
-        if duration != -1:
-            self.bar.set_range(0, duration)
-        else:
-            try:
-                self.adjust.value = 0
-            except:
-                pass
-            return
-
-        while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-            self.mutex.acquire()
-            gtk.gdk.threads_enter()
-            pos = self.player.getSeekedPosition()
-            if pos:
-                self.adjust.value = pos
-                self.adjust.emit("changed")
-
-            gtk.gdk.threads_leave()
-            self.mutex.release()
 
 
 
-    def __del__(self):
-        del(self)
 
-
-class showPos(threading.Thread):
-
-    def __init__(self, clock, player, entry, song, id):
-        threading.Thread.__init__(self)
-        self.clock = clock
-        self.player = player
-        self.entry = entry
-        self.song = song
-        self.id = id
-        self.mutex = threading.Lock()
-
-    def run(self):
-        self.segs = 0
-        self.spaces = ""
-        self.i = 0
-
-        while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-            self.mutex.acquire()
-            gtk.gdk.threads_enter()
-            time = self.player.getPosition()
-            if time:
-                self.clock.set_text(time)
-            #self.moveText()
-
-            gtk.gdk.threads_leave()
-            self.mutex.release()
-
-
-    def moveText(self):
-        #toma los segundos del string de tiempo
-        if int(self.getPosition()[3:5]) != self.segs:
-            leng = len(self.song)
-            title = self.song
-            self.spaces = self.spaces.zfill(self.i).replace("0"," ")
-
-            self.entry.set_text(self.spaces + title)
-            self.segs = int(self.getPosition()[3:5])
-            self.i += 1
-
-    def __del__(self):
-        del(self)
 
