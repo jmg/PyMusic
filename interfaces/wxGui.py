@@ -20,22 +20,26 @@ class MainWindow(wxGui):
         self.dir_dialog = wx.DirDialog(None, "Choose a Music Folder", style=1 ,defaultPath= ".")
 
         self.lbSongs.InsertColumn(0,"Path")
-        self.lbSongs.SetColumnWidth(0, 110)
+        self.lbSongs.SetColumnWidth(0, 0)
         self.lbSongs.InsertColumn(1,"Song")
-        self.lbSongs.SetColumnWidth(1, 110)
+        self.lbSongs.SetColumnWidth(1, 200)
         self.lbSongs.InsertColumn(2,"Artist")
-        self.lbSongs.SetColumnWidth(2, 110)
+        self.lbSongs.SetColumnWidth(2, 100)
         self.lbSongs.InsertColumn(3,"Album")
-        self.lbSongs.SetColumnWidth(3, 160)
+        self.lbSongs.SetColumnWidth(3, 100)
         self.lbSongs.InsertColumn(4,"Year")
-        self.lbSongs.SetColumnWidth(4, 180)
+
         self.lbSongs.InsertColumn(5,"Id")
-        self.lbSongs.SetColumnWidth(5, 180)
+        self.lbSongs.SetColumnWidth(5, 0)
 
         self.lbRadios.InsertColumn(0,"Uri")
 
         self.initialize_songs()
         self.initialize_radios()
+
+        #autosize after the list is loaded
+        self.lbSongs.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+        self.lbRadios.SetColumnWidth(0, wx.LIST_AUTOSIZE)
 
     def btPlay_click( self, event ):
         self.play(event)
