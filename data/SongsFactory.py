@@ -33,9 +33,11 @@ class SongsFactory():
         try:
             sintax = "select * from songs where song = \"" + song.path + "\""
             self.query.execute(sintax)
+            print sintax
             if not self.query.fetchone():
                 sintax = "insert into songs ('song', 'interpret', 'album', 'year') values \
                  (\"" + song.path + "\", \"" + song.artist + "\", \"" + song.album + "\" , \"" + song.year + "\" )"
+                print sintax
                 self.query.execute(sintax)
         except Exception, e:
             print e.message
@@ -70,7 +72,10 @@ class SongsFactory():
         self.conection.commit()
 
     def list_dir(self, dir):
-        return self._make_objects(utils.list_dir(dir))
+        list = utils.list_dir(dir)
+        print list
+        objects = self._make_objects(list)
+        return objects
 
 
     def scoreSong(self, idSong, score):

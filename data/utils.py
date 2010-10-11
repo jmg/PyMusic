@@ -18,11 +18,13 @@ def list_dir(dir):
                     directory = (dir + "/" + subdir + "/" + name).replace("\n","")
                     tags = getTags(directory)
                     tags.insert(0,directory)
+                    tags.insert(0, 0)
                     listSongs.append(tags)
                 else:
                     directory = (dir + "/" + name).replace("\n","")
                     tags = getTags(directory)
                     tags.insert(0,directory)
+                    tags.insert(0, 0)
                     listSongs.append(tags)
         else:
             subdir = name.replace("./", "")
