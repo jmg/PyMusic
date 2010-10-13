@@ -3,33 +3,19 @@ from logic.tags import Tags
 validFormats = ['.mp3','.wav','.wma']
 
 #lista un directorio recursivamente
-def list_dir(dir):
+def list_dir(root):
     list = []
     listSongs = []
-    os.chdir(dir)
-    list = os.popen("ls -1R").readlines()
-    subdir = ""
-    for name in list:
-        name.replace(":\n","")
-        name.replace("\n","")
-        if name.find("./") == -1:
-            if isValidFormat(name):
-                if subdir:
-                    directory = (dir + "/" + subdir + "/" + name).replace("\n","")
-                    tags = getTags(directory)
-                    tags.insert(0,directory)
-                    tags.insert(0, 0)
-                    listSongs.append(tags)
-                else:
-                    directory = (dir + "/" + name).replace("\n","")
-                    tags = getTags(directory)
-                    tags.insert(0,directory)
-                    tags.insert(0, 0)
-                    listSongs.append(tags)
-        else:
-            subdir = name.replace("./", "")
-            subdir = subdir.replace(":\n", "")
-            subdir = subdir.replace("\n", "")
+
+    for root, sub_folders, files in os.walk(root):
+        for file in files:
+            if isValidFormat(file):
+                path = os.path.join(root, file)
+                tags = getTags(path)
+                tags.insert(0, path)
+                tags.insert(0, 0)
+                listSongs.append(tags)
+
     return listSongs
 
 
