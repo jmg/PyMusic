@@ -1,6 +1,6 @@
 import os
 from logic.tags import Tags
-validFormats = ['.mp3','.wav','.wma']
+validFormats = ['.mp3','.wav','.wma', '.avi']
 
 #lista un directorio recursivamente
 def list_dir(root):

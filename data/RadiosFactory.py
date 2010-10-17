@@ -39,3 +39,8 @@ class RadiosFactory(object):
         self.query.execute(sintax)
         radios = self.query.fetchall()
         return self._make_objects(radios)
+
+    def delete(self, id):
+        sintax = "DELETE from radios where id = '%s'" % id
+        self.query.execute(sintax)
+        self.conection.commit()

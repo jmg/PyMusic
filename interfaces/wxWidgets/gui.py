@@ -63,29 +63,29 @@ class wxGui ( wx.Frame ):
 
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_notebook2 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_panel4 = wx.Panel( self.m_notebook2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.ntDown = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.pnPlayList = wx.Panel( self.ntDown, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer7 = wx.BoxSizer( wx.VERTICAL )
 
-        self.lbSongs = wx.ListCtrl( self.m_panel4, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_VRULES|wx.HSCROLL|wx.RAISED_BORDER|wx.VSCROLL )
+        self.lbSongs = wx.ListCtrl( self.pnPlayList, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_VRULES|wx.HSCROLL|wx.RAISED_BORDER|wx.VSCROLL )
         bSizer7.Add( self.lbSongs, 1, wx.ALL|wx.EXPAND, 5 )
 
-        self.m_panel4.SetSizer( bSizer7 )
-        self.m_panel4.Layout()
-        bSizer7.Fit( self.m_panel4 )
-        self.m_notebook2.AddPage( self.m_panel4, u"PlayList", True )
-        self.m_panel5 = wx.Panel( self.m_notebook2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.pnPlayList.SetSizer( bSizer7 )
+        self.pnPlayList.Layout()
+        bSizer7.Fit( self.pnPlayList )
+        self.ntDown.AddPage( self.pnPlayList, u"PlayList", True )
+        self.pnRadios = wx.Panel( self.ntDown, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer8 = wx.BoxSizer( wx.VERTICAL )
 
-        self.lbRadios = wx.ListCtrl( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_VRULES )
+        self.lbRadios = wx.ListCtrl( self.pnRadios, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.LC_VRULES )
         bSizer8.Add( self.lbRadios, 1, wx.ALL|wx.EXPAND, 5 )
 
-        self.m_panel5.SetSizer( bSizer8 )
-        self.m_panel5.Layout()
-        bSizer8.Fit( self.m_panel5 )
-        self.m_notebook2.AddPage( self.m_panel5, u"Radios", False )
+        self.pnRadios.SetSizer( bSizer8 )
+        self.pnRadios.Layout()
+        bSizer8.Fit( self.pnRadios )
+        self.ntDown.AddPage( self.pnRadios, u"Radios", False )
 
-        bSizer6.Add( self.m_notebook2, 1, wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        bSizer6.Add( self.ntDown, 1, wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
         bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
 
@@ -117,6 +117,9 @@ class wxGui ( wx.Frame ):
         self.itAddList = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Add List", wx.EmptyString, wx.ITEM_NORMAL )
         self.mnFile.AppendItem( self.itAddList )
 
+        self.itAddRadio = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Add Radio", wx.EmptyString, wx.ITEM_NORMAL )
+        self.mnFile.AppendItem( self.itAddRadio )
+
         self.itGenList = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Generate List", wx.EmptyString, wx.ITEM_NORMAL )
         self.mnFile.AppendItem( self.itGenList )
 
@@ -140,7 +143,10 @@ class wxGui ( wx.Frame ):
         self.tgRandom.Bind( wx.EVT_TOGGLEBUTTON, self.tgRandom_click )
         self.tbFinder.Bind( wx.EVT_KEY_DOWN, self.tbFinder_click )
         self.lbSongs.Bind( wx.EVT_LEFT_DCLICK, self.lbSongs_dbClick )
+        self.lbRadios.Bind( wx.EVT_KEY_DOWN, self.lbRadios_keyDown )
+        self.lbRadios.Bind( wx.EVT_LEFT_DCLICK, self.lbRadios_dbClick )
         self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itAddList.GetId() )
+        self.Bind( wx.EVT_MENU, self.itAddRadio_click, id = self.itAddRadio.GetId() )
         self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itGenList.GetId() )
         self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itAddList1.GetId() )
 
@@ -167,7 +173,16 @@ class wxGui ( wx.Frame ):
     def lbSongs_dbClick( self, event ):
         event.Skip()
 
+    def lbRadios_keyDown( self, event ):
+        event.Skip()
+
+    def lbRadios_dbClick( self, event ):
+        event.Skip()
+
     def itAddList_click( self, event ):
+        event.Skip()
+
+    def itAddRadio_click( self, event ):
         event.Skip()
 
 

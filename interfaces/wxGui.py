@@ -4,9 +4,10 @@ wxversion.select("2.8")
 import wx
 import os
 from interfaces.wxWidgets.gui import wxGui
+from interfaces.wxFrmAddRadio import wxFrmAddRadio
 
 from logic.player_logic import PlayerLogic, PlayerDataLogic
-from lyrics.terra import LyricsTerra
+
 
 class MainWindow(wxGui):
 
@@ -33,6 +34,8 @@ class MainWindow(wxGui):
         self.lbSongs.SetColumnWidth(5, 0)
 
         self.lbRadios.InsertColumn(0,"Uri")
+        self.lbRadios.InsertColumn(1,"Id")
+        self.lbRadios.SetColumnWidth(1, 0)
 
         self.initialize_songs()
         self.initialize_radios()
@@ -46,6 +49,9 @@ class MainWindow(wxGui):
 
     def lbSongs_dbClick( self, event ):
         self.play(event)
+
+    def lbRadios_dbClick( self, event ):
+        self.play_radio(event)
 
     def btStop_click( self, event ):
         self.stop(event)
@@ -61,6 +67,12 @@ class MainWindow(wxGui):
 
     def itAddList_click( self, event ):
         self.add_list(event)
+
+    def itAddRadio_click( self, event ):
+        self.add_radio(event)
+
+    def lbRadios_keyDown( self, event ):
+        self.delete_radio(event)
 
     def initialize_songs(self):
         self.data_logic.createTable()
@@ -98,11 +110,8 @@ class MainWindow(wxGui):
 
         for i, radio in enumerate(radios):
             index = self.lbRadios.InsertStringItem(100, radio.path)
-            self.lbRadios.SetStringItem(index, 1, radio.path)
-
-    def search_lyrics(self, song, artist):
-        lyric = LyricsTerra(song, artist)
-        self.tbLyrics.SetValue(lyric.parse_lyrics())
+            self.lbRadios.SetStringItem(index, 0, radio.path)
+            self.lbRadios.SetStringItem(index, 1, str(radio.id))
 
     def play(self, event):
 
@@ -114,8 +123,16 @@ class MainWindow(wxGui):
         song = self.lbSongs.GetItem(index, 1).GetText()
         artist = self.lbSongs.GetItem(index, 2).GetText()
 
-        self.search_lyrics(song, artist)
+        lyrics = self.logic.search_lyrics(song, artist)
+        self.tbLyrics.SetValue(lyrics)
+
         self.id = self.logic.play(path, self.next)
+
+    def play_radio(self, event):
+
+        index, radio_to_play = self.radio_to_play()
+
+        self.id = self.logic.play(radio_to_play, self.next)
 
     def stop(self, event):
         self.logic.stop()
@@ -145,7 +162,7 @@ class MainWindow(wxGui):
 
     def set_song(self, index):
         """
-            sets a song in the textbox and return the name
+            set a song in the textbox and return the name
         """
         SEL_FOC = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
         current_index = self.lbSongs.GetFirstSelected()
@@ -161,6 +178,24 @@ class MainWindow(wxGui):
         title_of_song = self.lbSongs.GetItem(index, 1).GetText()
         self.tbSong.SetValue(title_of_song)
         return song_to_play
+
+    def set_radio(self, index):
+        """
+            set a radio in the textbox and return the name
+        """
+        SEL_FOC = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
+        current_index = self.lbRadios.GetFirstSelected()
+        #unselect the current index
+        self.lbRadios.SetItemState(current_index, 0, wx.LIST_STATE_SELECTED)
+
+        if index < self.get_list_len() - 1:
+            self.lbRadios.SetItemState(index, SEL_FOC, SEL_FOC)
+        else:
+            self.lbRadios.SetItemState(0, SEL_FOC, SEL_FOC)
+
+        radio_to_play = self.lbRadios.GetItem(index, 0).GetText()
+        self.tbSong.SetValue(radio_to_play)
+        return radio_to_play
 
     def song_to_play(self):
         """
@@ -189,6 +224,15 @@ class MainWindow(wxGui):
             song_to_play = self.set_song(random_index)
 
         return random_index, song_to_play
+
+    def radio_to_play(self):
+        """
+            Select the current radio to play
+        """
+        index = self.lbRadios.GetFirstSelected()
+        radio_to_play = self.set_radio(index)
+
+        return index, radio_to_play
 
     def check_exists(self, path):
         """
@@ -226,6 +270,17 @@ class MainWindow(wxGui):
             songs = self.data_logic.fetch_all_songs()
             self.list_load(songs)
 
+    def add_radio(self, event):
+        frmAddRadio = wxFrmAddRadio(self)
+        frmAddRadio.ShowModal()
+        if frmAddRadio.State == frmAddRadio.OK:
+            self.initialize_radios()
 
+    def delete_radio(self, event):
+        if event.GetKeyCode() == wx.WXK_DELETE:
+            current_index = self.lbRadios.GetFirstSelected()
+            id = self.lbRadios.GetItem(current_index, 1).GetText()
+            self.data_logic.delete_radio(id)
+            self.initialize_radios()
 
 

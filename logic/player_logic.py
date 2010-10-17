@@ -6,6 +6,7 @@ from data.db import dataBase
 from data.SongsFactory import SongsFactory
 from data.RadiosFactory import RadiosFactory
 from config import Modes, ManagerModes
+from lyrics.engine import LyricsSearcher
 
 class PlayerLogic(object):
 
@@ -69,6 +70,10 @@ class PlayerLogic(object):
     def change_volume(self, value):
         self.player.change_volume(value)
 
+    def search_lyrics(self, song, artist):
+        lyric = LyricsSearcher(song, artist)
+        return lyric.get_lyrics()
+
 
 class PlayerDataLogic(object):
 
@@ -98,8 +103,11 @@ class PlayerDataLogic(object):
     def fetch_radios(self):
         return self.factory_radios.fetch_all()
 
-    def insert_radio(self, radio):
+    def add_radio(self, radio):
         self.factory_radios.insert(radio)
+
+    def delete_radio(self, id):
+        self.factory_radios.delete(id)
 
     def list_dir(self, dir):
         return self.factory_songs.list_dir(dir)
