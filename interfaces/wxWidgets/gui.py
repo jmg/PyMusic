@@ -142,6 +142,7 @@ class wxGui ( wx.Frame ):
         self.btPause.Bind( wx.EVT_BUTTON, self.btPause_click )
         self.tgRandom.Bind( wx.EVT_TOGGLEBUTTON, self.tgRandom_click )
         self.tbFinder.Bind( wx.EVT_KEY_DOWN, self.tbFinder_click )
+        self.ntDown.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.ntDown_Changed )
         self.lbSongs.Bind( wx.EVT_LEFT_DCLICK, self.lbSongs_dbClick )
         self.lbRadios.Bind( wx.EVT_KEY_DOWN, self.lbRadios_keyDown )
         self.lbRadios.Bind( wx.EVT_LEFT_DCLICK, self.lbRadios_dbClick )
@@ -168,6 +169,9 @@ class wxGui ( wx.Frame ):
         event.Skip()
 
     def tbFinder_click( self, event ):
+        event.Skip()
+
+    def ntDown_Changed( self, event ):
         event.Skip()
 
     def lbSongs_dbClick( self, event ):

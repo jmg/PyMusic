@@ -5,5 +5,5 @@ class Modes:
 
 class ManagerModes:
 
-    MUSIC = 1
+    NORMAL = 1
     RADIO = 2

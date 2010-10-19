@@ -7,7 +7,7 @@ from interfaces.wxWidgets.gui import wxGui
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
 
 from logic.player_logic import PlayerLogic, PlayerDataLogic
-
+from generics.multiprogramming import threaded
 
 class MainWindow(wxGui):
 
@@ -41,8 +41,8 @@ class MainWindow(wxGui):
         self.initialize_radios()
 
         #autosize after the list is loaded
-        self.lbSongs.SetColumnWidth(4, wx.LIST_AUTOSIZE)
-        self.lbRadios.SetColumnWidth(0, wx.LIST_AUTOSIZE)
+        self.lbSongs.SetColumnWidth(4, 100)
+        self.lbRadios.SetColumnWidth(0, 400)
 
     def btPlay_click( self, event ):
         self.play(event)
@@ -74,6 +74,9 @@ class MainWindow(wxGui):
     def lbRadios_keyDown( self, event ):
         self.delete_radio(event)
 
+    def ntDown_Changed( self, event ):
+        self.change_mode(event)
+
     def initialize_songs(self):
         self.data_logic.createTable()
         songs = self.data_logic.fetch_all_songs()
@@ -84,10 +87,12 @@ class MainWindow(wxGui):
         radios = self.data_logic.fetch_radios()
         self.listRadios_load(radios)
 
+    @threaded
     def list_load(self, songs):
         """
             Load the list_ctrl with a list of songs
         """
+        wx.MutexGuiEnter()
         self.lbSongs.DeleteAllItems()
 
         for i, song in enumerate(songs):
@@ -101,19 +106,30 @@ class MainWindow(wxGui):
             self.lbSongs.SetStringItem(index, 3, song.album)
             self.lbSongs.SetStringItem(index, 4, song.year)
             self.lbSongs.SetStringItem(index, 5, str(song.id))
+        wx.MutexGuiLeave()
 
+    @threaded
     def listRadios_load(self, radios):
         """
             Load the list_ctrl with a list of radios
         """
+        wx.MutexGuiEnter()
         self.lbRadios.DeleteAllItems()
 
         for i, radio in enumerate(radios):
             index = self.lbRadios.InsertStringItem(100, radio.path)
             self.lbRadios.SetStringItem(index, 0, radio.path)
             self.lbRadios.SetStringItem(index, 1, str(radio.id))
+        wx.MutexGuiLeave()
 
     def play(self, event):
+
+        if self.logic.get_man_mode() == self.logic.man_modes.RADIO:
+            self.play_radio(event)
+        elif self.logic.get_man_mode() == self.logic.man_modes.NORMAL:
+            self.play_song(event)
+
+    def play_song(self, event):
 
         if self.logic.mode == self.logic.modes.NORMAL_PLAY:
             index, path = self.song_to_play()
@@ -250,6 +266,19 @@ class MainWindow(wxGui):
         else:
             self.logic.set_mode(self.logic.modes.RANDOM_PLAY)
 
+    def change_mode(self, event):
+        """
+            set the player mode
+            [PLAY_LIST / RADIOS]
+        """
+        #0 is playlist
+        #1 is radios
+        page = self.ntDown.GetSelection()
+        if page == 1:
+            self.logic.set_man_mode(self.logic.man_modes.RADIO)
+        elif page == 0:
+            self.logic.set_man_mode(self.logic.man_modes.NORMAL)
+
     def finder(self, event):
         """
             Find a list of songs by a condition
@@ -265,10 +294,14 @@ class MainWindow(wxGui):
     def add_list(self, event):
         if self.dir_dialog.ShowModal() == wx.ID_OK:
             dir = self.dir_dialog.GetPath()
-            list_dir = self.data_logic.list_dir(dir)
-            self.data_logic.add_songs(list_dir)
-            songs = self.data_logic.fetch_all_songs()
-            self.list_load(songs)
+            self.dir_worker(dir)
+
+    @threaded
+    def dir_worker(self, dir):
+        list_dir = self.data_logic.list_dir(dir)
+        self.data_logic.add_songs(list_dir)
+        songs = self.data_logic.fetch_all_songs()
+        self.list_load(songs)
 
     def add_radio(self, event):
         frmAddRadio = wxFrmAddRadio(self)

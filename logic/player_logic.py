@@ -14,7 +14,7 @@ class PlayerLogic(object):
     modes = Modes()
     mode = Modes.NORMAL_PLAY
     man_modes = ManagerModes()
-    man_mode = ManagerModes.MUSIC
+    man_mode = ManagerModes.NORMAL
 
     def get_mode(self):
         return self.mode
