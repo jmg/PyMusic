@@ -5,6 +5,7 @@ from player.gstreamer import mp3player
 from data.db import dataBase
 from data.SongsFactory import SongsFactory
 from data.RadiosFactory import RadiosFactory
+import data.utils
 from config import Modes, ManagerModes
 from lyrics.engine import LyricsSearcher
 

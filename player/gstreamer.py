@@ -127,9 +127,3 @@ class mp3player:
 
         return mins + ":" + segs #+ "." + milisegs
 
-
-
-
-
-
-

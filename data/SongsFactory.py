@@ -15,31 +15,42 @@ class SongsFactory():
             objetcs.append(obj)
         return objetcs
 
+    def list_dir(self, dir):
+        list = utils.list_dir(dir)
+        return self._make_objects(list)
+
     @connected
     def createTable(self):
-        sintax = "CREATE TABLE if not exists songs (\
-                  id       INTEGER PRIMARY KEY AUTOINCREMENT ,\
-                   song     varchar(300) not null, \
-                   interpret    varchar(100), \
-                    album     varchar(100), \
-                    year       varchar(10) \
-                   )"
+        sintax = """CREATE TABLE if not exists songs (
+                    id            INTEGER PRIMARY KEY AUTOINCREMENT ,
+                    song          varchar(300) not null,
+                    interpret     varchar(100),
+                    album         varchar(100),
+                    year          varchar(10)
+                   )"""
         self.query.execute(sintax)
+
+
+    @connected
+    def exists(self, song):
+        sintax = """SELECT 1 FROM songs WHERE id = '%s' """ % song.id
+        self.query.execute(sintax)
+        print sintax
+        return len(self.query.fetchone()) > 0
 
     @connected
     def insert(self, song):
-        try:
-            sintax = "select * from songs where song = \"" + song.path + "\""
-            self.query.execute(sintax)
-            print sintax
-            if not self.query.fetchone():
-                sintax = "insert into songs ('song', 'interpret', 'album', 'year') values \
-                 (\"" + song.path + "\", \"" + song.artist + "\", \"" + song.album + "\" , \"" + song.year + "\" )"
+
+        if not self.exists(song):
+            try:
+                sintax = """INSERT INTO songs ('song', 'interpret', 'album', 'year') VALUES
+                    """ % (song.path, song.artist, song.album, song.year)
                 print sintax
+
                 self.query.execute(sintax)
-        except Exception, e:
-            print e.message
-        self.conection.commit()
+            except Exception, e:
+                print e.message
+            self.conection.commit()
 
     @connected
     def fetch_one(self):
@@ -57,27 +68,22 @@ class SongsFactory():
 
     @connected
     def fetch_many(self, condition):
-        sintax = "select id, song, interpret, album, year from songs where \
-                    song like '%" + condition + "%' \
-                    or interpret like '%" + condition + "%' \
-                    or album like '%" + condition + "%' \
-                    order by song \
-                    "
+        sintax = """SELECT id, song, interpret, album, year from songs where
+                    song like '%%%s%%'
+                    or interpret like '%%%s%%'
+                    or album like '%%%s%%'
+                    order by song
+                    """ % (condition, condition, condition)
+        print sintax
         self.query.execute(sintax)
         songs = self.query.fetchall()
         return self._make_objects(songs)
 
     @connected
     def delete(self, song):
-        sintax = 'delete from songs where song = "' + song + '"'
+        sintax = "delete from songs where id = %s" % song.id
         self.query.execute(sintax)
         self.conection.commit()
-
-    def list_dir(self, dir):
-        list = utils.list_dir(dir)
-        print list
-        objects = self._make_objects(list)
-        return objects
 
     @connected
     def scoreSong(self, idSong, score):

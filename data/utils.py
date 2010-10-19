@@ -1,6 +1,6 @@
 import os
 from logic.tags import Tags
-validFormats = ['.mp3','.wav','.wma', '.avi']
+validFormats = ['.mp3','.wav','.wma', '.avi', '.ogg']
 
 def list_dir(root):
     """
