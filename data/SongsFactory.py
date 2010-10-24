@@ -45,7 +45,6 @@ class SongsFactory():
             try:
                 sintax = """INSERT INTO songs ('song', 'interpret', 'album', 'year') VALUES
                     """ % (song.path, song.artist, song.album, song.year)
-                print sintax
 
                 self.query.execute(sintax)
             except Exception, e:

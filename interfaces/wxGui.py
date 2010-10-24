@@ -4,8 +4,10 @@ wxversion.select("2.8")
 import wx
 import os
 from interfaces.wxWidgets.gui import wxGui
+from interfaces.wxWidgets.logo import frmLogo
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
 
+from wxGuiThreads import ShowPosThread
 from logic.player_logic import PlayerLogic, PlayerDataLogic
 from generics.multiprogramming import threaded
 
@@ -16,22 +18,19 @@ class MainWindow(wxGui):
 
     def __init__(self, parent):
 
+        frmlogo = frmLogo(None)
+        frmlogo.Show()
+
         wxGui.__init__(self, parent)
 
         self.dir_dialog = wx.DirDialog(None, "Choose a Music Folder", style=1 ,defaultPath= ".")
 
         self.lbSongs.InsertColumn(0,"Path")
-        self.lbSongs.SetColumnWidth(0, 0)
         self.lbSongs.InsertColumn(1,"Song")
-        self.lbSongs.SetColumnWidth(1, 200)
         self.lbSongs.InsertColumn(2,"Artist")
-        self.lbSongs.SetColumnWidth(2, 100)
         self.lbSongs.InsertColumn(3,"Album")
-        self.lbSongs.SetColumnWidth(3, 100)
         self.lbSongs.InsertColumn(4,"Year")
-
         self.lbSongs.InsertColumn(5,"Id")
-        self.lbSongs.SetColumnWidth(5, 0)
 
         self.lbRadios.InsertColumn(0,"Uri")
         self.lbRadios.InsertColumn(1,"Id")
@@ -41,8 +40,18 @@ class MainWindow(wxGui):
         self.initialize_radios()
 
         #autosize after the list is loaded
+
+        self.lbSongs.SetColumnWidth(0, 0)
+        self.lbSongs.SetColumnWidth(1, 300)
+        self.lbSongs.SetColumnWidth(2, 150)
+        self.lbSongs.SetColumnWidth(3, 150)
+        self.lbSongs.SetColumnWidth(4, wx.LIST_AUTOSIZE)
+        self.lbRadios.SetColumnWidth(0, 0)
+        self.lbSongs.SetColumnWidth(5, 0)
         self.lbSongs.SetColumnWidth(4, 100)
         self.lbRadios.SetColumnWidth(0, 400)
+
+        frmlogo.Hide()
 
     def btPlay_click( self, event ):
         self.play(event)
@@ -57,7 +66,10 @@ class MainWindow(wxGui):
         self.stop(event)
 
     def btPause_click( self, event ):
-        self.set_next_index()
+        self.pause(event)
+
+    def btResume_click( self, event ):
+        self.resume(event)
 
     def tgRandom_click( self, event ):
         self.random_play(event)
@@ -67,6 +79,19 @@ class MainWindow(wxGui):
 
     def itAddList_click( self, event ):
         self.add_list(event)
+
+    def itGenList_click( self, event ):
+        event.Skip()
+
+    def itViewLyrics_click( self, event ):
+        event.Skip()
+        #self.hide_lyrics(event)
+
+    def btPrevious_click( self, event ):
+        self.previous(event)
+
+    def btNext_click( self, event ):
+        self.next(event)
 
     def itAddRadio_click( self, event ):
         self.add_radio(event)
@@ -142,7 +167,11 @@ class MainWindow(wxGui):
         lyrics = self.logic.search_lyrics(song, artist)
         self.tbLyrics.SetValue(lyrics)
 
-        self.id = self.logic.play(path, self.next)
+        id = self.logic.play(path, self.next)
+
+        #thread to show the current time of the song
+        self.showPosThread = ShowPosThread(self.tbTime, self.logic.player, id)
+        self.showPosThread.start()
 
     def play_radio(self, event):
 
@@ -153,7 +182,19 @@ class MainWindow(wxGui):
     def stop(self, event):
         self.logic.stop()
 
-    def next(self):
+    def pause(self, event):
+        self.logic.pause()
+
+        self.btPause.SetLabel("Resume")
+        self.btPause.Bind( wx.EVT_BUTTON, self.btResume_click )
+
+    def resume(self, event):
+        self.logic.resume()
+
+        self.btPause.SetLabel("Pause")
+        self.btPause.Bind( wx.EVT_BUTTON, self.btPause_click )
+
+    def next(self, event=None):
         """
             Play the next Song
         """
@@ -162,17 +203,26 @@ class MainWindow(wxGui):
         self.set_next_index()
         self.play(self.next)
 
+    def previous(self, event=None):
+        """
+            Play the previous Song
+        """
+
+        self.stop(self.next)
+        self.set_next_index(offset=-1)
+        self.play(self.next)
+
     def get_list_len(self):
         return self.lbSongs.GetItemCount()
 
-    def set_next_index(self):
+    def set_next_index(self, offset=1):
         SEL_FOC = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
         index = self.lbSongs.GetFirstSelected()
         #unselect the current index
         self.lbSongs.SetItemState(index, 0, wx.LIST_STATE_SELECTED)
 
         if index < self.get_list_len() - 1:
-            self.lbSongs.SetItemState(index + 1, SEL_FOC, SEL_FOC)
+            self.lbSongs.SetItemState(index + offset, SEL_FOC, SEL_FOC)
         else:
             self.lbSongs.SetItemState(0, SEL_FOC, SEL_FOC)
 
@@ -193,6 +243,10 @@ class MainWindow(wxGui):
         song_to_play = self.lbSongs.GetItem(index, 0).GetText()
         title_of_song = self.lbSongs.GetItem(index, 1).GetText()
         self.tbSong.SetValue(title_of_song)
+        #set the title of the main windows
+        self.SetTitle(title_of_song)
+        self.SetName(title_of_song)
+
         return song_to_play
 
     def set_radio(self, index):
@@ -296,6 +350,9 @@ class MainWindow(wxGui):
             dir = self.dir_dialog.GetPath()
             self.dir_worker(dir)
 
+    def hide_lyrics(self, event):
+        pass
+
     @threaded
     def dir_worker(self, dir):
         list_dir = self.data_logic.list_dir(dir)
@@ -303,11 +360,18 @@ class MainWindow(wxGui):
         songs = self.data_logic.fetch_all_songs()
         self.list_load(songs)
 
+        self.ntRight.Hide()
+        #self.Clear()
+        self.Refresh()
+
     def add_radio(self, event):
         frmAddRadio = wxFrmAddRadio(self)
         frmAddRadio.ShowModal()
         if frmAddRadio.State == frmAddRadio.OK:
             self.initialize_radios()
+
+    def slVolume_slide( self, event ):
+        self.logic.change_volume(self.slVolume.GetValue() /100.0)
 
     def delete_radio(self, event):
         if event.GetKeyCode() == wx.WXK_DELETE:
@@ -315,5 +379,4 @@ class MainWindow(wxGui):
             id = self.lbRadios.GetItem(current_index, 1).GetText()
             self.data_logic.delete_radio(id)
             self.initialize_radios()
-
 
