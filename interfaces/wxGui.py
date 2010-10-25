@@ -6,8 +6,9 @@ import os
 from interfaces.wxWidgets.gui import wxGui
 from interfaces.wxWidgets.logo import frmLogo
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
+from interfaces.wxFrmGenList import wxFrmGenList
 
-from wxGuiThreads import ShowPosThread
+from wxGuiThreads import ShowPosThread, MoveBarThread
 from logic.player_logic import PlayerLogic, PlayerDataLogic
 from generics.multiprogramming import threaded
 
@@ -81,7 +82,7 @@ class MainWindow(wxGui):
         self.add_list(event)
 
     def itGenList_click( self, event ):
-        event.Skip()
+        self.gen_list(event)
 
     def itViewLyrics_click( self, event ):
         event.Skip()
@@ -172,6 +173,9 @@ class MainWindow(wxGui):
         #thread to show the current time of the song
         self.showPosThread = ShowPosThread(self.tbTime, self.logic.player, id)
         self.showPosThread.start()
+
+        self.moveBarThread = MoveBarThread(self.slPosition, self.logic.player, id)
+        self.moveBarThread.start()
 
     def play_radio(self, event):
 
@@ -325,8 +329,6 @@ class MainWindow(wxGui):
             set the player mode
             [PLAY_LIST / RADIOS]
         """
-        #0 is playlist
-        #1 is radios
         page = self.ntDown.GetSelection()
         if page == 1:
             self.logic.set_man_mode(self.logic.man_modes.RADIO)
@@ -379,4 +381,39 @@ class MainWindow(wxGui):
             id = self.lbRadios.GetItem(current_index, 1).GetText()
             self.data_logic.delete_radio(id)
             self.initialize_radios()
+
+    def gen_list(self, event):
+        frmGenList = wxFrmGenList(self)
+        frmGenList.ShowModal()
+        if frmGenList.State == frmGenList.OK:
+            size = int(frmGenList.size)
+            filter = frmGenList.filter
+            path = frmGenList.dir
+            self.list_generator(path, filter, size)
+
+    @threaded
+    def list_generator(self, path, filter, size):
+        size *= 1024 #bytes to kilo
+        size *= 1024 #kilo to mega
+        #self.size *= 1024 #mega to giga
+        acum = 0
+        songs = self.data_logic.find(filter)
+        if not os.path.exists(path):
+            os.mkdir(path)
+        for song in songs:
+            try:
+                filesize = os.path.getsize(song.path)
+            except:
+                continue
+            acum += filesize
+
+            if size <= acum:
+                break
+            command = 'cp "'+ song.path + '" "' + path + '"'
+            print command
+            try:
+                os.system(command)
+            except:
+                acum -= filesize
+                continue
 

@@ -9,7 +9,6 @@
 
 import wx
 
-
 ###########################################################################
 ## Class wxGui
 ###########################################################################
@@ -17,7 +16,7 @@ import wx
 class wxGui ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"PyMusic", pos = wx.DefaultPosition, size = wx.Size( 1200,700 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1200,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
@@ -25,7 +24,7 @@ class wxGui ( wx.Frame ):
 
         bSizer4 = wx.BoxSizer( wx.VERTICAL )
 
-        bSizer13 = wx.BoxSizer( wx.HORIZONTAL )
+        bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
 
         bSizer16 = wx.BoxSizer( wx.VERTICAL )
 
@@ -51,10 +50,10 @@ class wxGui ( wx.Frame ):
         bSizer3.Add( self.btPause, 1, wx.ALL, 5 )
 
         self.btPrevious = wx.Button( self, wx.ID_ANY, u"Previous", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer3.Add( self.btPrevious, 1, wx.ALL, 5 )
+        bSizer3.Add( self.btPrevious, 0, wx.ALL, 5 )
 
         self.btNext = wx.Button( self, wx.ID_ANY, u"Next", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer3.Add( self.btNext, 1, wx.ALL, 5 )
+        bSizer3.Add( self.btNext, 0, wx.ALL, 5 )
 
         self.tgRandom = wx.ToggleButton( self, wx.ID_ANY, u"Random", wx.DefaultPosition, wx.DefaultSize, 0 )
         bSizer3.Add( self.tgRandom, 1, wx.ALL, 5 )
@@ -72,16 +71,23 @@ class wxGui ( wx.Frame ):
 
         bSizer16.Add( bSizer21, 0, wx.EXPAND, 5 )
 
-        bSizer13.Add( bSizer16, 1, wx.EXPAND, 5 )
+        bSizer15.Add( bSizer16, 1, wx.EXPAND, 5 )
 
         bSizer17 = wx.BoxSizer( wx.VERTICAL )
 
         self.slVolume = wx.Slider( self, wx.ID_ANY, 100, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_INVERSE|wx.SL_VERTICAL )
-        bSizer17.Add( self.slVolume, 1, wx.ALL|wx.EXPAND, 5 )
+        bSizer17.Add( self.slVolume, 1, wx.ALL, 5 )
 
-        bSizer13.Add( bSizer17, 0, wx.EXPAND, 5 )
+        bSizer15.Add( bSizer17, 0, wx.EXPAND, 5 )
 
-        bSizer4.Add( bSizer13, 0, wx.EXPAND, 5 )
+        bSizer4.Add( bSizer15, 0, wx.EXPAND, 5 )
+
+        bSizer18 = wx.BoxSizer( wx.VERTICAL )
+
+        self.slPosition = wx.Slider( self, wx.ID_ANY, 0, 0, 100, wx.DefaultPosition, wx.DefaultSize, wx.SL_HORIZONTAL )
+        bSizer18.Add( self.slPosition, 1, wx.ALL|wx.EXPAND, 5 )
+
+        bSizer4.Add( bSizer18, 0, wx.EXPAND, 5 )
 
         bSizer6 = wx.BoxSizer( wx.VERTICAL )
 
@@ -109,27 +115,27 @@ class wxGui ( wx.Frame ):
 
         bSizer6.Add( self.ntDown, 1, wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
 
-        bSizer4.Add( bSizer6, 1, wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
 
-        bSizer1.Add( bSizer4, 3, wx.EXPAND, 5 )
+        bSizer1.Add( bSizer4, 4, wx.EXPAND, 5 )
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.ntRight = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.pnLyrics = wx.Panel( self.ntRight, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_panel3 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer9 = wx.BoxSizer( wx.VERTICAL )
 
-        self.tbLyrics = wx.TextCtrl( self.pnLyrics, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+        self.tbLyrics = wx.TextCtrl( self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
         bSizer9.Add( self.tbLyrics, 1, wx.ALL|wx.EXPAND, 5 )
 
-        self.pnLyrics.SetSizer( bSizer9 )
-        self.pnLyrics.Layout()
-        bSizer9.Fit( self.pnLyrics )
-        self.ntRight.AddPage( self.pnLyrics, u"Lyrics", False )
+        self.m_panel3.SetSizer( bSizer9 )
+        self.m_panel3.Layout()
+        bSizer9.Fit( self.m_panel3 )
+        self.m_notebook1.AddPage( self.m_panel3, u"Lyrics", False )
 
-        bSizer5.Add( self.ntRight, 2, wx.ALL|wx.EXPAND, 5 )
+        bSizer5.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
 
-        bSizer1.Add( bSizer5, 2, wx.ALIGN_RIGHT|wx.EXPAND, 5 )
+        bSizer1.Add( bSizer5, 3, wx.EXPAND, 5 )
 
         self.SetSizer( bSizer1 )
         self.Layout()
@@ -148,8 +154,8 @@ class wxGui ( wx.Frame ):
         self.mnBar.Append( self.mnFile, u"File" )
 
         self.mnView = wx.Menu()
-        self.itViewLyrics = wx.MenuItem( self.mnView, wx.ID_ANY, u"Lyrics", wx.EmptyString, wx.ITEM_NORMAL )
-        self.mnView.AppendItem( self.itViewLyrics )
+        self.itAddList1 = wx.MenuItem( self.mnView, wx.ID_ANY, u"Lyrics", wx.EmptyString, wx.ITEM_NORMAL )
+        self.mnView.AppendItem( self.itAddList1 )
 
         self.mnBar.Append( self.mnView, u"View" )
 
@@ -159,34 +165,32 @@ class wxGui ( wx.Frame ):
         self.Centre( wx.BOTH )
 
         # Connect Events
+        self.Bind( wx.EVT_ACTIVATE_APP, self.Onload )
         self.btPlay.Bind( wx.EVT_BUTTON, self.btPlay_click )
         self.btStop.Bind( wx.EVT_BUTTON, self.btStop_click )
         self.btPause.Bind( wx.EVT_BUTTON, self.btPause_click )
-        self.btPrevious.Bind( wx.EVT_BUTTON, self.btPrevious_click )
+        self.btPrevious.Bind( wx.EVT_BUTTON, self.btPrecious_click )
         self.btNext.Bind( wx.EVT_BUTTON, self.btNext_click )
         self.tgRandom.Bind( wx.EVT_TOGGLEBUTTON, self.tgRandom_click )
         self.tbFinder.Bind( wx.EVT_KEY_DOWN, self.tbFinder_click )
-
         self.slVolume.Bind( wx.EVT_SCROLL, self.slVolume_slide )
-
         self.ntDown.Bind( wx.EVT_NOTEBOOK_PAGE_CHANGED, self.ntDown_Changed )
-
         self.lbSongs.Bind( wx.EVT_LEFT_DCLICK, self.lbSongs_dbClick )
         self.lbRadios.Bind( wx.EVT_KEY_DOWN, self.lbRadios_keyDown )
         self.lbRadios.Bind( wx.EVT_LEFT_DCLICK, self.lbRadios_dbClick )
         self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itAddList.GetId() )
-
-        self.Bind( wx.EVT_MENU, self.itGenList_click, id = self.itGenList.GetId() )
-        self.Bind( wx.EVT_MENU, self.itViewLyrics_click, id = self.itViewLyrics.GetId() )
         self.Bind( wx.EVT_MENU, self.itAddRadio_click, id = self.itAddRadio.GetId() )
-        self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itGenList.GetId() )
-        self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itAddList.GetId() )
+        self.Bind( wx.EVT_MENU, self.itGenList_click, id = self.itGenList.GetId() )
+        self.Bind( wx.EVT_MENU, self.itAddList_click, id = self.itAddList1.GetId() )
 
     def __del__( self ):
         pass
 
 
     # Virtual event handlers, overide them in your derived class
+    def Onload( self, event ):
+        event.Skip()
+
     def btPlay_click( self, event ):
         event.Skip()
 
@@ -196,7 +200,7 @@ class wxGui ( wx.Frame ):
     def btPause_click( self, event ):
         event.Skip()
 
-    def btPrevious_click( self, event ):
+    def btPrecious_click( self, event ):
         event.Skip()
 
     def btNext_click( self, event ):
@@ -226,13 +230,10 @@ class wxGui ( wx.Frame ):
     def itAddList_click( self, event ):
         event.Skip()
 
-    def itGenList_click( self, event ):
-        event.Skip()
-
     def itAddRadio_click( self, event ):
         event.Skip()
 
-    def itViewLyrics_click( self, event ):
+    def itGenList_click( self, event ):
         event.Skip()
 
 
