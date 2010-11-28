@@ -2,12 +2,7 @@ import pygame
 from lindenmayer import *
 from numpy import *
 
-pygame.init()
-
 class Pencil(object):
-
-    SIZE = (1000,1000)
-    screen = pygame.display.set_mode(SIZE)
 
     COLOR = (0,255,255)
 
@@ -16,6 +11,9 @@ class Pencil(object):
     offset = array([LEN ,0])
     pos = array([50,900])
     angle = 90
+
+    def __init__(self, screen):
+        self.screen = screen
 
     def turn_left(self):
         if tuple(self.offset) == (self.LEN ,0):
@@ -68,38 +66,38 @@ class Pencil(object):
             self._turn_left_with_angle()
 
     def draw(self):
-        pygame.draw.line(self.screen, self.COLOR, tuple(self.pos), tuple(self.pos + self.offset))
-        pygame.display.flip()
+        pygame.draw.aaline(self.screen, self.COLOR, tuple(self.pos), tuple(self.pos + self.offset))
         self.pos = self.pos + self.offset
 
 
-g = FractalGen()
-s = ""
-for x in range(8):
-    s = g.next()
+if __name__ == "__main__":
+    g = FractalGen()
+    s = ""
+    for x in range(8):
+        s = g.next()
 
-print s
-p = Pencil()
+    print s
+    p = Pencil()
 
-def drawer():
-    for c in s:
-        if c == 'F':
-            p.draw()
-        elif c == '-':
-            p.turn_right()
-        elif c == '+':
-            p.turn_left()
+    def drawer():
+        for c in s:
+            if c == 'F':
+                p.draw()
+            elif c == '-':
+                p.turn_right()
+            elif c == '+':
+                p.turn_left()
 
-def t():
-    for c in s:
-        if c == 'A' or c == 'B':
-            p.draw()
-        elif c == '+':
-            p.turn_left_with_angle(60)
-        elif c == '-':
-            p.turn_left_with_angle(-60)
+    def t():
+        for c in s:
+            if c == 'A' or c == 'B':
+                p.draw()
+            elif c == '+':
+                p.turn_left_with_angle(60)
+            elif c == '-':
+                p.turn_left_with_angle(-60)
 
-#drawer()
-t()
+    #drawer()
+    t()
 
 

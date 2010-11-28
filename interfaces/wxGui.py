@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import wxversion
 wxversion.select("2.8")
 
@@ -7,6 +8,7 @@ from interfaces.wxWidgets.gui import wxGui
 from interfaces.wxWidgets.logo import frmLogo
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
 from interfaces.wxFrmGenList import wxFrmGenList
+from interfaces.visualization import VisualizationDisplay
 
 from wxGuiThreads import ShowPosThread, MoveBarThread
 from logic.player_logic import PlayerLogic, PlayerDataLogic
@@ -53,6 +55,9 @@ class MainWindow(wxGui):
         self.lbRadios.SetColumnWidth(0, 400)
 
         frmlogo.Hide()
+
+        self.visual = VisualizationDisplay(self.pnVisual, wx.ID_ANY, self.ntRight)
+
 
     def btPlay_click( self, event ):
         self.play(event)
@@ -369,8 +374,8 @@ class MainWindow(wxGui):
     def add_radio(self, event):
         frmAddRadio = wxFrmAddRadio(self)
         frmAddRadio.ShowModal()
-        if frmAddRadio.State == frmAddRadio.OK:
-            self.initialize_radios()
+        #if frmAddRadio.State == frmAddRadio.OK:
+        #    self.initialize_radios()
 
     def slVolume_slide( self, event ):
         self.logic.change_volume(self.slVolume.GetValue() /100.0)

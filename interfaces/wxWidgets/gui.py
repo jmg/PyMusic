@@ -16,7 +16,7 @@ import wx
 class wxGui ( wx.Frame ):
 
     def __init__( self, parent ):
-        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1200,600 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+        wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Py Music", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_FRAME_STYLE|wx.MAXIMIZE|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
         self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 
@@ -121,8 +121,8 @@ class wxGui ( wx.Frame ):
 
         bSizer5 = wx.BoxSizer( wx.VERTICAL )
 
-        self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
-        self.m_panel3 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        self.ntRight = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
+        self.m_panel3 = wx.Panel( self.ntRight, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
         bSizer9 = wx.BoxSizer( wx.VERTICAL )
 
         self.tbLyrics = wx.TextCtrl( self.m_panel3, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
@@ -131,14 +131,22 @@ class wxGui ( wx.Frame ):
         self.m_panel3.SetSizer( bSizer9 )
         self.m_panel3.Layout()
         bSizer9.Fit( self.m_panel3 )
-        self.m_notebook1.AddPage( self.m_panel3, u"Lyrics", False )
+        self.ntRight.AddPage( self.m_panel3, u"Lyrics", False )
+        self.pnVisual = wx.Panel( self.ntRight, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+        bSizer37 = wx.BoxSizer( wx.VERTICAL )
 
-        bSizer5.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
+        self.pnVisual.SetSizer( bSizer37 )
+        self.pnVisual.Layout()
+        bSizer37.Fit( self.pnVisual )
+        self.ntRight.AddPage( self.pnVisual, u"Visualization", True )
+
+        bSizer5.Add( self.ntRight, 1, wx.EXPAND |wx.ALL, 5 )
 
         bSizer1.Add( bSizer5, 3, wx.EXPAND, 5 )
 
         self.SetSizer( bSizer1 )
         self.Layout()
+        bSizer1.Fit( self )
         self.m_statusBar1 = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
         self.mnBar = wx.MenuBar( 0 )
         self.mnFile = wx.Menu()
@@ -165,7 +173,6 @@ class wxGui ( wx.Frame ):
         self.Centre( wx.BOTH )
 
         # Connect Events
-        self.Bind( wx.EVT_ACTIVATE_APP, self.Onload )
         self.btPlay.Bind( wx.EVT_BUTTON, self.btPlay_click )
         self.btStop.Bind( wx.EVT_BUTTON, self.btStop_click )
         self.btPause.Bind( wx.EVT_BUTTON, self.btPause_click )
@@ -188,9 +195,6 @@ class wxGui ( wx.Frame ):
 
 
     # Virtual event handlers, overide them in your derived class
-    def Onload( self, event ):
-        event.Skip()
-
     def btPlay_click( self, event ):
         event.Skip()
 
