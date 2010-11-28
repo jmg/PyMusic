@@ -33,10 +33,14 @@ class SongsFactory():
 
     @connected
     def exists(self, song):
-        sintax = """SELECT 1 FROM songs WHERE id = '%s' """ % song.id
-        self.query.execute(sintax)
-        print sintax
-        return len(self.query.fetchone()) > 0
+        try:
+            sintax = """SELECT 1 FROM songs WHERE song = '%s' """ % song.path
+            print sintax
+            self.query.execute(sintax)
+            return self.query.fetchone() is not None
+        except:
+            print "error en: " + str(sintax)
+            return True
 
     @connected
     def insert(self, song):
@@ -44,7 +48,7 @@ class SongsFactory():
         if not self.exists(song):
             try:
                 sintax = """INSERT INTO songs ('song', 'interpret', 'album', 'year') VALUES
-                    """ % (song.path, song.artist, song.album, song.year)
+                    ('%s','%s','%s','%s')""" % (song.path, song.artist, song.album, song.year)
 
                 self.query.execute(sintax)
             except Exception, e:

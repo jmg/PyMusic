@@ -9,6 +9,7 @@ from interfaces.wxWidgets.logo import frmLogo
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
 from interfaces.wxFrmGenList import wxFrmGenList
 from interfaces.visualization import VisualizationDisplay
+from interfaces.Notify import SongNotify
 
 from wxGuiThreads import ShowPosThread, MoveBarThread
 from logic.player_logic import PlayerLogic, PlayerDataLogic
@@ -56,7 +57,7 @@ class MainWindow(wxGui):
 
         frmlogo.Hide()
 
-        self.visual = VisualizationDisplay(self.pnVisual, wx.ID_ANY, self.ntRight)
+        #self.visual = VisualizationDisplay(self.pnVisual, wx.ID_ANY, self.ntRight)
 
 
     def btPlay_click( self, event ):
@@ -179,6 +180,8 @@ class MainWindow(wxGui):
         self.showPosThread = ShowPosThread(self.tbTime, self.logic.player, id)
         self.showPosThread.start()
 
+        SongNotify(song)
+
         self.moveBarThread = MoveBarThread(self.slPosition, self.logic.player, id)
         self.moveBarThread.start()
 
@@ -187,6 +190,8 @@ class MainWindow(wxGui):
         index, radio_to_play = self.radio_to_play()
 
         self.id = self.logic.play(radio_to_play, self.next)
+
+        SongNotify(radio_to_play)
 
     def stop(self, event):
         self.logic.stop()
