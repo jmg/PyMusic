@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-import wxversion
-wxversion.select("2.8")
-
 import wx
 import os
 from interfaces.wxWidgets.gui import wxGui

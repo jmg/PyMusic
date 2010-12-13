@@ -1,9 +1,6 @@
 #/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import wxversion
-wxversion.select("2.8")
-
 from wx import App
 
 from interfaces.wxGui import MainWindow
