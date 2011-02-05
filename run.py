@@ -8,7 +8,7 @@ from interfaces.console import ConsoleProxy
 import sys
 import gtk
 
-if __name__ == '__main__':
+def main():
 
     if len(sys.argv) > 1:
         ConsoleProxy(sys.argv[1:])
@@ -17,3 +17,6 @@ if __name__ == '__main__':
         frame = MainWindow(None)
         frame.Show()
         app.MainLoop()
+
+if __name__ == '__main__':
+    main()

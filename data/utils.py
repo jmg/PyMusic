@@ -15,7 +15,7 @@ def list_dir(root):
                 path = os.path.join(root, file)
                 tags = getTags(path)
                 tags.insert(0, path)
-                tags.insert(0, 0)
+                tags.insert(0, None)
                 listSongs.append(tags)
 
     return listSongs

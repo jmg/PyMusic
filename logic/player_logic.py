@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import os
+
 from player.gstreamer import mp3player
 from data.db import dataBase
 from data.SongsFactory import SongsFactory
@@ -8,6 +9,9 @@ from data.RadiosFactory import RadiosFactory
 import data.utils
 from config import Modes, ManagerModes
 from lyrics.engine import LyricsSearcher
+
+from alchemy.factory import *
+from alchemy.model import *
 
 class PlayerLogic(object):
 
@@ -86,14 +90,16 @@ class PlayerDataLogic(object):
         self.factory_songs.createTable()
 
     def find(self, filter):
-        return self.factory_songs.fetch_many(filter)
+        return Factory_songs().fetch_many(filter)
 
     def fetch_all_songs(self):
-        return self.factory_songs.fetch_all()
+        return Factory_songs().fetch_all()
 
     def add_songs(self, songs):
+        factory = Factory_songs()
         for song in songs:
-            self.factory_songs.insert(song)
+            factory.insert(song)
+        factory.commit()
 
     def fetch_songs_scores(self):
         return self.factory_songs.fetch_all_scores()
@@ -111,5 +117,5 @@ class PlayerDataLogic(object):
         self.factory_radios.delete(id)
 
     def list_dir(self, dir):
-        return self.factory_songs.list_dir(dir)
+        return Factory_songs().list_dir(dir)
 
