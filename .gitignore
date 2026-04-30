@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# Local config / cache (XDG dirs are outside the repo, but ignore any local ones)
+.cache/
+config.local.toml
