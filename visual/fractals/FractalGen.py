@@ -5,7 +5,12 @@ except ImportError:
     pygame = None
     _PYGAME_AVAILABLE = False
 
-from numpy import array, tan, pi
+try:
+    from numpy import array, tan, pi
+    _NUMPY_AVAILABLE = True
+except ImportError:
+    array = tan = pi = None
+    _NUMPY_AVAILABLE = False
 
 from visual.fractals.lindenmayer import FractalGen
 
@@ -16,8 +21,12 @@ class Pencil:
 
     LEN = 3
 
-    offset = array([LEN, 0])
-    pos = array([50, 900])
+    if _NUMPY_AVAILABLE:
+        offset = array([LEN, 0])
+        pos = array([50, 900])
+    else:
+        offset = (LEN, 0)
+        pos = (50, 900)
     angle = 90
 
     def __init__(self, screen):

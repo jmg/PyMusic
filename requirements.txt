@@ -1,0 +1,17 @@
+# Runtime dependencies for PyMusic (Python 3).
+#
+# Mandatory
+SQLAlchemy>=2.0
+
+# GUI backends (install whichever matches the entry point you want to use)
+#   run.py       -> wxPython
+#   run.gtk.py   -> PyGObject (GTK 3)
+wxPython>=4.2
+PyGObject>=3.42
+
+# Audio backend (used by player.gstreamer); requires GStreamer 1.0 from the
+# system. The optional pygame backend lives in player.mp3player.
+pygame>=2.1
+
+# Visualisation (Lindenmayer fractal pencil)
+numpy>=1.23

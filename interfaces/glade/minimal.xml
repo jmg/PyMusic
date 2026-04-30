@@ -16,55 +16,6 @@
     <property name="page_size">1</property>
     <property name="value">1</property>
   </object>
-  <object class="GtkUIManager" id="uimanager1">
-    <child>
-      <object class="GtkActionGroup" id="actiongroup1">
-        <child>
-          <object class="GtkAction" id="menuitem1">
-            <property name="name">menuitem1</property>
-            <property name="label" translatable="yes">_Archivo</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="Menu_Randomizer">
-            <property name="stock_id">gtk-missing-image</property>
-            <property name="name">Menu_Randomizer</property>
-            <property name="label" translatable="yes">Generar Lista Aleatoria</property>
-            <signal handler="menu_randomizer" name="activate"/>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="menuitem3">
-            <property name="name">menuitem3</property>
-            <property name="label" translatable="yes">_Ver</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="menuitem4">
-            <property name="name">menuitem4</property>
-            <property name="label" translatable="yes">Ay_uda</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkAction" id="imagemenuitem10">
-            <property name="stock_id">gtk-about</property>
-            <property name="name">imagemenuitem10</property>
-          </object>
-        </child>
-      </object>
-    </child>
-    <ui>
-      <menubar name="menubar1">
-        <menu action="menuitem1">
-          <menuitem action="Menu_Randomizer"/>
-        </menu>
-        <menuitem action="menuitem3"/>
-        <menu action="menuitem4">
-          <menuitem action="imagemenuitem10"/>
-        </menu>
-      </menubar>
-    </ui>
-  </object>
   <!-- interface-requires gtk+ 3.0 -->
   <!-- interface-naming-policy project-wide -->
   <object class="GtkWindow" id="window1">
@@ -331,10 +282,54 @@
           </packing>
         </child>
         <child>
-          <object class="GtkMenuBar" constructor="uimanager1" id="menubar1">
+          <object class="GtkMenuBar" id="menubar1">
             <property name="width_request">1010</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
+            <child>
+              <object class="GtkMenuItem" id="menuitem1">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Archivo</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu_archivo">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkMenuItem" id="Menu_Randomizer">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Generar Lista Aleatoria</property>
+                        <signal handler="menu_randomizer" name="activate"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menuitem3">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Ver</property>
+                <property name="use_underline">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="menuitem4">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Ay_uda</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="menu_ayuda">
+                    <property name="visible">True</property>
+                    <child>
+                      <object class="GtkMenuItem" id="imagemenuitem10">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Acerca de</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
         </child>
         <child>

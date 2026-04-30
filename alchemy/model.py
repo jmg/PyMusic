@@ -9,7 +9,7 @@ BaseObject = declarative_base()
 
 
 class Song(BaseObject):
-    __tablename__ = 'Songs'
+    __tablename__ = 'songs'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     path = Column('song', String(255))
@@ -26,10 +26,10 @@ class Song(BaseObject):
 
 
 class Radio(BaseObject):
-    __tablename__ = 'Radios'
+    __tablename__ = 'radios'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    path = Column('song', String(255))
+    path = Column('radio', String(255))
     artist = Column('interpret', String(50))
     album = Column(String(50))
     year = Column(Integer)
@@ -40,3 +40,21 @@ class Radio(BaseObject):
         self.artist = artist
         self.album = album
         self.year = year
+
+
+class Score(BaseObject):
+    __tablename__ = 'scores'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    idSong = Column(Integer)
+    score = Column(Integer)
+
+
+class IndexSong(BaseObject):
+    __tablename__ = 'IndexSongs'
+
+    # No real primary key on the original schema; SQLAlchemy needs one to map
+    # the table, so we treat ``indexSong`` as the PK (it is unique by use).
+    indexSong = Column(Integer, primary_key=True)
+    idSong = Column(Integer)
+    currentlyList = Column(Integer)

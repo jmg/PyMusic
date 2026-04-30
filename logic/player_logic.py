@@ -2,14 +2,14 @@
 import os
 import random
 
+from alchemy.database import init_db
+from alchemy.factory import Factory_songs
 from data.db import dataBase
 from data.SongsFactory import SongsFactory
 from data.RadiosFactory import RadiosFactory
 from logic.config import Modes, ManagerModes
 from lyrics.engine import LyricsSearcher
 from player.gstreamer import mp3player
-
-from alchemy.factory import Factory_songs
 
 
 class PlayerLogic:
@@ -82,6 +82,7 @@ class PlayerDataLogic:
     factory_radios = RadiosFactory()
 
     def createTable(self):
+        init_db()
         self.factory_songs.createTable()
 
     def find(self, filter):
