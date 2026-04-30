@@ -1,7 +1,12 @@
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+
+try:
+    from sqlalchemy.orm import declarative_base
+except ImportError:  # SQLAlchemy < 1.4
+    from sqlalchemy.ext.declarative import declarative_base
 
 BaseObject = declarative_base()
+
 
 class Song(BaseObject):
     __tablename__ = 'Songs'

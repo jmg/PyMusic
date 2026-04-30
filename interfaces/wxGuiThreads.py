@@ -1,63 +1,53 @@
 import threading
+import time
+
 import wx
+
 
 class ShowPosThread(threading.Thread):
 
     def __init__(self, clock, player, id):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.clock = clock
         self.player = player
         self.id = id
 
     def run(self):
-
         while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-
-            wx.MutexGuiEnter()
-
-            time = self.player.getPosition()
-            if time:
-                self.clock.SetValue(time)
-
-            wx.MutexGuiLeave()
-
-    def __del__(self):
-        del(self)
+            position = self.player.getPosition()
+            if position:
+                wx.CallAfter(self.clock.SetValue, position)
+            time.sleep(0.5)
 
 
 class MoveBarThread(threading.Thread):
 
     def __init__(self, bar, player, id):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.bar = bar
         self.player = player
         self.id = id
 
     def run(self):
         duration = None
-        while not duration:
+        for _ in range(50):
             try:
                 duration = self.player.getSeekableDuration()
-            except:
+                if duration:
+                    break
+            except Exception:
                 pass
+            time.sleep(0.1)
 
-        if duration != -1:
-            self.bar.SetRange(0, duration/1000)
-        else:
-            try:
-                self.adjust.value = 0
-            except:
-                pass
+        if duration is None or duration == -1:
             return
 
-        while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-            wx.MutexGuiEnter()
+        wx.CallAfter(self.bar.SetRange, 0, duration // 1000)
 
+        while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
             pos = self.player.getSeekedPosition()
             if pos:
-                self.bar.SetValue(pos/1000)
-
-            wx.MutexGuiLeave()
-
-    def __del__(self):
-        del(self)
+                wx.CallAfter(self.bar.SetValue, pos // 1000)
+            time.sleep(0.5)

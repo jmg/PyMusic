@@ -18,7 +18,7 @@ class FrmGenList ( wx.Dialog ):
     def __init__( self, parent ):
         wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Add Radio Url ", pos = wx.DefaultPosition, size = wx.Size( 352,188 ), style = wx.DEFAULT_DIALOG_STYLE )
 
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+        self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
         bSizer11 = wx.BoxSizer( wx.VERTICAL )
 

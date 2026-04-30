@@ -1,15 +1,10 @@
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlite3 import dbapi2 as sqlite
 
 from alchemy import config
+from alchemy.model import BaseObject
 
-Base = declarative_base()
+engine = create_engine(f"sqlite:///{config.connection_string}", future=True)
+BaseObject.metadata.create_all(engine)
 
-engine = create_engine('sqlite:///' + config.connection_string, module=sqlite)
-Base.metadata.create_all(engine)
-
-Session = sessionmaker(bind=engine)
-
-
+Session = sessionmaker(bind=engine, future=True)

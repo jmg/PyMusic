@@ -1,105 +1,91 @@
+import os
 import threading
-import gtk
+import time
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import GLib  # noqa: F401  (kept available for callers)
+
 
 class ShowPosThread(threading.Thread):
 
     def __init__(self, clock, entry, song, player, id):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.clock = clock
         self.player = player
         self.entry = entry
         self.song = song
         self.id = id
-        self.mutex = threading.Lock()
 
     def run(self):
-
         while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-            self.mutex.acquire()
-            gtk.gdk.threads_enter()
-            time = self.player.getPosition()
-            if time:
-                self.clock.set_text(time)
-
-            gtk.gdk.threads_leave()
-            self.mutex.release()
-
-
-    def __del__(self):
-        del(self)
+            position = self.player.getPosition()
+            if position:
+                GLib.idle_add(self.clock.set_text, position)
+            time.sleep(0.5)
 
 
 class MoveBarThread(threading.Thread):
 
     def __init__(self, bar, player, id):
         threading.Thread.__init__(self)
+        self.daemon = True
         self.bar = bar
         self.player = player
         self.id = id
 
-        self.adjust = self.bar.get_adjustment()
-        self.mutex = threading.Lock()
-
     def run(self):
         duration = None
-        while not duration:
+        for _ in range(50):
             try:
                 duration = self.player.getSeekableDuration()
-            except:
+                if duration:
+                    break
+            except Exception:
                 pass
+            time.sleep(0.1)
 
-        if duration != -1:
-            self.bar.set_range(0, duration)
-        else:
-            try:
-                self.adjust.value = 0
-            except:
-                pass
+        if not duration or duration == -1:
             return
 
+        adjust = self.bar.get_adjustment()
+        GLib.idle_add(self.bar.set_range, 0, duration)
+
         while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
-            self.mutex.acquire()
-            gtk.gdk.threads_enter()
             pos = self.player.getSeekedPosition()
             if pos:
-                self.adjust.value = pos
-                self.adjust.emit("changed")
-
-            gtk.gdk.threads_leave()
-            self.mutex.release()
-
-    def __del__(self):
-        del(self)
+                GLib.idle_add(adjust.set_value, pos)
+            time.sleep(0.5)
 
 
 class RandomListThread(threading.Thread):
 
     def __init__(self, songs, size, path):
-        gstreamer.threading.Thread.__init__(self)
+        threading.Thread.__init__(self)
+        self.daemon = True
         self.size = size
         self.songs = songs
         self.path = path
 
     def run(self):
-        self.size *= 1024 #bytes to kilo
-        self.size *= 1024 #kilo to mega
-        #self.size *= 1024 #mega to giga
+        self.size *= 1024  # bytes to kilo
+        self.size *= 1024  # kilo to mega
         acum = 0
         if not os.path.exists(self.path):
             os.mkdir(self.path)
         for song in self.songs:
             try:
                 filesize = os.path.getsize(song[0])
-            except:
+            except OSError:
                 continue
             acum += filesize
             if self.size <= acum:
                 break
-            command = 'cp "'+ song[0] + '" "' + self.path + '"'
-            print command
+            command = f'cp "{song[0]}" "{self.path}"'
+            print(command)
             try:
                 os.system(command)
-            except:
+            except Exception:
                 acum -= filesize
                 continue
-

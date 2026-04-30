@@ -1,5 +1,6 @@
-from wxWidgets.frmAddRadio import FrmAddRadio
-from logic.player_logic import PlayerLogic, PlayerDataLogic
+from interfaces.wxWidgets.frmAddRadio import FrmAddRadio
+from logic.player_logic import PlayerDataLogic
+
 
 class wxFrmAddRadio(FrmAddRadio):
 
@@ -9,13 +10,13 @@ class wxFrmAddRadio(FrmAddRadio):
     data_logic = PlayerDataLogic()
     State = CANCEL
 
-    def __init__( self, parent ):
+    def __init__(self, parent):
         FrmAddRadio.__init__(self, parent)
 
-    def btOk_click( self, event ):
+    def btOk_click(self, event):
         self.data_logic.add_radio(self.tbAddRadio.GetValue())
         self.State = self.OK
         self.Close()
 
-    def btCancel_click( self, event ):
+    def btCancel_click(self, event):
         self.Close()

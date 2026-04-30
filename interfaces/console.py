@@ -1,6 +1,6 @@
 from player.gstreamer import mp3player
-import sys
 from data.db import dataBase
+
 
 class ConsolePlayer:
 
@@ -11,17 +11,15 @@ class ConsolePlayer:
         self.dba.createIndexTable()
 
     def search(self, condition=""):
-
         songs = self.dba.fetchManyWithId(condition)
-        for i,song in enumerate(songs):
-            print str(i) + ".-" + song[1]
+        for i, song in enumerate(songs):
+            print(f"{i}.-{song[1]}")
             self.dba.UpdateIndex(song[0], i)
-        self.dba.ResetList();
+        self.dba.ResetList()
         self.dba.UpdateList(len(songs) - 1)
 
     def play(self, song):
-
-        print "Currently Playing => %s" % song
+        print(f"Currently Playing => {song}")
         self.Player.play(song)
         try:
             while not self.Player.songFinished():
@@ -32,22 +30,20 @@ class ConsolePlayer:
         self.Player.stop()
 
     def fetchAndPlay(self, index):
-
         song = self.dba.fetchByIndex(index)
         self.play(song[0])
 
     def playlist(self):
-
         songs = self.dba.fetchPlayList()
-        print "****************************** Play List ******************************"
-        print "TOTAL: %s" % len(songs)
+        print("****************************** Play List ******************************")
+        print(f"TOTAL: {len(songs)}")
         for i, song in enumerate(songs):
-            print str(i) + ".- " + song[0]
+            print(f"{i}.- {song[0]}")
         for song in songs:
             self.play(song[0])
 
-    def default(self, arg):
-        print args
+    def default(self, args):
+        print(args)
 
 
 class Commands:
@@ -56,6 +52,7 @@ class Commands:
     PLAY = "play"
     PLAYLIST = "playlist"
     message = "\n\nTerminado... Gracias por reproducir con PyMp3!\n"
+
 
 class ConsoleProxy:
 
@@ -70,7 +67,7 @@ class ConsoleProxy:
             try:
                 index = int(args[1])
                 self.Player.fetchAndPlay(index)
-            except:
+            except (ValueError, IndexError):
                 self.Player.play(args[1])
 
         elif args[0].lower() == Commands.PLAYLIST:
@@ -81,8 +78,3 @@ class ConsoleProxy:
 
         else:
             self.Player.default(args)
-
-
-
-
-

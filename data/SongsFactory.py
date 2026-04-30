@@ -1,19 +1,15 @@
-from clases.clases import Song
-import data.utils as utils
-from connection import connected
+from data.clases.clases import Song
+from data import utils
+from data.connection import connected
 
-class SongsFactory():
+
+class SongsFactory:
 
     def _make_object(self, *args):
-        song = Song(*args)
-        return song
+        return Song(*args)
 
     def _make_objects(self, rows):
-        objetcs = []
-        for row in rows:
-            obj = self._make_object(*row)
-            objetcs.append(obj)
-        return objetcs
+        return [self._make_object(*row) for row in rows]
 
     def list_dir(self, dir):
         list = utils.list_dir(dir)
@@ -30,29 +26,25 @@ class SongsFactory():
                    )"""
         self.query.execute(sintax)
 
-
     @connected
     def exists(self, song):
         try:
-            sintax = """SELECT 1 FROM songs WHERE song = '%s' """ % song.path
-            print sintax
-            self.query.execute(sintax)
+            self.query.execute(
+                "SELECT 1 FROM songs WHERE song = ?", (song.path,))
             return self.query.fetchone() is not None
-        except:
-            print "error en: " + str(sintax)
+        except Exception as e:
+            print(f"error en exists({song.path!r}): {e}")
             return True
 
     @connected
     def insert(self, song):
-
         if not self.exists(song):
             try:
-                sintax = """INSERT INTO songs ('song', 'interpret', 'album', 'year') VALUES
-                    ('%s','%s','%s','%s')""" % (song.path, song.artist, song.album, song.year)
-
-                self.query.execute(sintax)
-            except Exception, e:
-                print e.message
+                self.query.execute(
+                    "INSERT INTO songs (song, interpret, album, year) VALUES (?, ?, ?, ?)",
+                    (song.path, song.artist, song.album, song.year))
+            except Exception as e:
+                print(e)
             self.conection.commit()
 
     @connected
@@ -66,45 +58,40 @@ class SongsFactory():
     def fetch_all(self):
         sintax = "select id, song, interpret, album, year from songs order by song"
         self.query.execute(sintax)
-        songs = self.query.fetchall()
-        return self._make_objects(songs)
+        return self._make_objects(self.query.fetchall())
 
     @connected
     def fetch_many(self, condition):
         sintax = """SELECT id, song, interpret, album, year from songs where
-                    song like '%%%s%%'
-                    or interpret like '%%%s%%'
-                    or album like '%%%s%%'
-                    order by song
-                    """ % (condition, condition, condition)
-        print sintax
-        self.query.execute(sintax)
-        songs = self.query.fetchall()
-        return self._make_objects(songs)
+                    song like ?
+                    or interpret like ?
+                    or album like ?
+                    order by song"""
+        like = f"%{condition}%"
+        self.query.execute(sintax, (like, like, like))
+        return self._make_objects(self.query.fetchall())
 
     @connected
     def delete(self, song):
-        sintax = "delete from songs where id = %s" % song.id
-        self.query.execute(sintax)
+        self.query.execute("delete from songs where id = ?", (song.id,))
         self.conection.commit()
 
     @connected
     def scoreSong(self, idSong, score):
-        sintax = "select * from scores where idSong = " + idSong
-        self.query.execute(sintax)
+        self.query.execute("select * from scores where idSong = ?", (idSong,))
         if not self.query.fetchone():
-            sintax = "insert into scores (idSong, score) values  \
-            (" + str(idSong) + "," + str(score) + ")"
-            self.query.execute(sintax)
+            self.query.execute(
+                "insert into scores (idSong, score) values (?, ?)",
+                (idSong, score))
         else:
-            sintax = "update scores set score = " + str(score) + " \
-            where idSong = " + str(idSong)
-            self.query.execute(sintax)
+            self.query.execute(
+                "update scores set score = ? where idSong = ?",
+                (score, idSong))
         self.conection.commit()
 
     @connected
     def fetch_all_scores(self):
-        sintax = "select song,score from songs inner join \
-                scores on scores.idsong = songs.id order by score desc"
+        sintax = """select song, score from songs inner join
+                    scores on scores.idsong = songs.id order by score desc"""
         self.query.execute(sintax)
         return self.query.fetchall()

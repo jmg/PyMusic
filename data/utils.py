@@ -1,18 +1,18 @@
 import os
+
 from logic.tags import Tags
-validFormats = ['.mp3','.wav','.wma', '.avi', '.ogg']
+
+validFormats = ['.mp3', '.wav', '.wma', '.avi', '.ogg']
+
 
 def list_dir(root):
-    """
-        recursive list a of a dir
-    """
-    list = []
+    """Recursively list audio files inside ``root``."""
     listSongs = []
 
-    for root, sub_folders, files in os.walk(root):
+    for current_root, _sub_folders, files in os.walk(root):
         for file in files:
             if isValidFormat(file):
-                path = os.path.join(root, file)
+                path = os.path.join(current_root, file)
                 tags = getTags(path)
                 tags.insert(0, path)
                 tags.insert(0, None)
@@ -22,12 +22,8 @@ def list_dir(root):
 
 
 def isValidFormat(name):
-        for format in validFormats:
-            if name.find(format) != -1:
-                return True
-        return False
+    return any(name.find(fmt) != -1 for fmt in validFormats)
+
 
 def getTags(song):
-    #obtiene las tags del mp3
-    mp3tags = Tags(song)
-    return mp3tags.list()
+    return Tags(song).list()

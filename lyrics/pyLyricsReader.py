@@ -1,9 +1,8 @@
-import wxversion
-wxversion.select("2.8")
-
-from GUI import LyricReader
 from wx import App
-from terra import LyricsTerra
+
+from lyrics.GUI import LyricReader
+from lyrics.terra import LyricsTerra
+
 
 class pyLyricReader(LyricReader):
 
@@ -11,20 +10,18 @@ class pyLyricReader(LyricReader):
         LyricReader.__init__(self, parent)
 
     def tbTema_change(self, event):
-        #enter key
         if event.GetKeyCode() == 13:
             self.do_search()
         else:
             event.Skip()
 
     def tbArtista_change(self, event):
-        #enter key
         if event.GetKeyCode() == 13:
             self.do_search()
         else:
             event.Skip()
 
-    def btBuscar_click( self, event ):
+    def btBuscar_click(self, event):
         self.do_search()
 
     def do_search(self):
@@ -36,7 +33,6 @@ class pyLyricReader(LyricReader):
 
 
 if __name__ == "__main__":
-
     app = App(0)
     frame = pyLyricReader(None)
     frame.Show()

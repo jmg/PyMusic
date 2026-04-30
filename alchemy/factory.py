@@ -1,9 +1,11 @@
-from sqlalchemy import *
-from model import *
-from database import Session
+from sqlalchemy import or_
+
+from alchemy.model import Song, Radio
+from alchemy.database import Session
 from data import utils
 
-class Factory(object):
+
+class Factory:
 
     def __init__(self, model):
         self.session = Session()
@@ -24,26 +26,23 @@ class Factory(object):
 class Factory_songs(Factory):
 
     def __init__(self):
-        Factory.__init__(self, Song)
+        super().__init__(Song)
 
     def _make_object(self, *args):
-        song = Song(*args)
-        return song
+        return Song(*args)
 
     def _make_objects(self, rows):
-        objetcs = []
-        for row in rows:
-            obj = self._make_object(*row)
-            objetcs.append(obj)
-        return objetcs
+        return [self._make_object(*row) for row in rows]
 
     def fetch_many(self, condition):
+        like = f"%{condition}%"
         return self.session.query(self.model).filter(
-               or_(self.model.path.like("%" + condition + "%"),
-                   self.model.artist.like("%" + condition + "%"),
-                   self.model.album.like("%" + condition + "%")
-                   )
-               ).all()
+            or_(
+                self.model.path.like(like),
+                self.model.artist.like(like),
+                self.model.album.like(like),
+            )
+        ).all()
 
     def list_dir(self, dir):
         songs_list = utils.list_dir(dir)

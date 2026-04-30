@@ -1,31 +1,52 @@
 # -*- coding: utf-8 -*-
-import gst
-import os
-import gtk
-import threading
+"""GStreamer 1.0 backed mp3 player via PyGObject.
+
+Falls back to a no-op stub when GStreamer is unavailable so that the rest of
+the application can still be imported (useful in headless test/CI envs).
+"""
+
 import time
 
-gtk.gdk.threads_init()
+try:
+    import gi
+    gi.require_version('Gst', '1.0')
+    from gi.repository import Gst
+
+    Gst.init(None)
+    _GST_AVAILABLE = True
+except (ImportError, ValueError):
+    Gst = None
+    _GST_AVAILABLE = False
+
 
 class mp3player:
 
     def __init__(self):
-        self.player = gst.element_factory_make("playbin", "player")
-        self.timeFormat = gst.Format(gst.FORMAT_TIME)
+        if _GST_AVAILABLE:
+            self.player = Gst.ElementFactory.make("playbin", "player")
+        else:
+            self.player = None
+        self.next = None
+        self.id = None
 
+    # ------------------------------------------------------------------
+    # Playback control
+    # ------------------------------------------------------------------
     def play(self, path, next=None, id=None):
         self.next = next
         self.id = id
+        if not self.player:
+            return
 
-        uri = self.getUri(path)
-
-        self.player.set_property('uri', uri)
+        self.player.set_property('uri', self.getUri(path))
         try:
-            self.player.set_state(gst.STATE_PLAYING)
-        except:
+            self.player.set_state(Gst.State.PLAYING)
+        except Exception:
             pass
+
         bus = self.player.get_bus()
-        bus.add_watch(self.eventListener)
+        bus.add_signal_watch()
+        bus.connect('message', self._on_bus_message)
 
     def playList(self, listSongs):
         for song in listSongs:
@@ -37,93 +58,94 @@ class mp3player:
         return "file://" + path
 
     def stop(self):
-        if self.isPlaying():
-            self.player.set_state(gst.STATE_NULL)
+        if self.isPlaying() and self.player:
+            self.player.set_state(Gst.State.NULL)
 
     def resume(self):
-        if not self.isPlaying():
-            self.player.set_state(gst.STATE_PLAYING)
+        if not self.isPlaying() and self.player:
+            self.player.set_state(Gst.State.PLAYING)
 
     def pause(self):
-        if self.isPlaying():
-            self.player.set_state(gst.STATE_PAUSED)
-
-    def getPosition(self):
-        if self.isPlaying():
-            pos = None
-            while not pos:
-                try:
-                    pos = self.player.query_position(self.timeFormat, None)[0]
-                except:
-                    pass
-            return self.convertTime(pos)
-
-    def getSeekedPosition(self):
-        if self.isPlaying():
-            pos = None
-            while not pos:
-                try:
-                    pos = self.player.query_position(self.timeFormat, None)[0]
-                except:
-                    pass
-            return pos
-
-    def getSeekableDuration(self):
-        return self.player.query_duration(gst.FORMAT_TIME, None)[0]
-
-    def seek(self, position):
-        self.player.seek(1.0, gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, gst.SEEK_TYPE_SET, position, gst.SEEK_TYPE_NONE,0)
+        if self.isPlaying() and self.player:
+            self.player.set_state(Gst.State.PAUSED)
 
     def change_volume(self, volume):
-        self.player.set_property("volume",volume)
+        if self.player:
+            self.player.set_property("volume", volume)
 
+    # ------------------------------------------------------------------
+    # Position queries
+    # ------------------------------------------------------------------
+    def getPosition(self):
+        if not (self.isPlaying() and self.player):
+            return None
+        pos = self._query_position()
+        if pos is None:
+            return None
+        return self.convertTime(pos)
+
+    def getSeekedPosition(self):
+        if not (self.isPlaying() and self.player):
+            return None
+        return self._query_position()
+
+    def _query_position(self):
+        for _ in range(10):
+            ok, pos = self.player.query_position(Gst.Format.TIME)
+            if ok:
+                return pos
+        return None
+
+    def getSeekableDuration(self):
+        if not self.player:
+            return -1
+        ok, dur = self.player.query_duration(Gst.Format.TIME)
+        return dur if ok else -1
+
+    def seek(self, position):
+        if not self.player:
+            return
+        self.player.seek(
+            1.0,
+            Gst.Format.TIME,
+            Gst.SeekFlags.FLUSH,
+            Gst.SeekType.SET, position,
+            Gst.SeekType.NONE, 0,
+        )
+
+    # ------------------------------------------------------------------
+    # State queries
+    # ------------------------------------------------------------------
     def isPlaying(self):
-        self.state = self.player.get_state()[1]
-        if self.state.value_nick == 'playing':
-            return True
-        return False
+        if not self.player:
+            return False
+        _, state, _ = self.player.get_state(Gst.CLOCK_TIME_NONE)
+        return state == Gst.State.PLAYING
 
     def isPaused(self):
-        self.state = self.player.get_state()[1]
-        if self.state.value_nick == 'paused':
-            return True
-        return False
+        if not self.player:
+            return False
+        _, state, _ = self.player.get_state(Gst.CLOCK_TIME_NONE)
+        return state == Gst.State.PAUSED
 
-    def eventListener(self, bus, event):
-        if event.type == gst.MESSAGE_EOS:
+    # ------------------------------------------------------------------
+    # Bus events
+    # ------------------------------------------------------------------
+    def _on_bus_message(self, bus, message):
+        if message.type == Gst.MessageType.EOS and self.next:
             self.next()
-        return True
 
-    #solucion no optima
+    # solucion no optima
     def songFinished(self):
         pos = self.getPosition()
         time.sleep(2)
         newPos = self.getPosition()
-        if pos == newPos:
-            return True
-        return False
+        return pos == newPos
 
-    def convertTime(self, time):
-        time_int = time / 1000000000
-        mins = time_int / 60
+    def convertTime(self, ns_time):
+        time_int = ns_time // 1_000_000_000
+        mins = time_int // 60
         segs = time_int % 60
-        if mins < 10:
-            mins = "0" + str(mins)
-        else:
-            mins = str(mins)
-
-        if segs < 10:
-            segs = "0" + str(segs)
-        else:
-            segs = str(segs)
-
-#        milisegs = (time / 1000000) % 1000
-#        if milisegs < 100:
-#            milisegs = "0" + str(milisegs)
-#        elif milisegs < 10:
-#            milisegs = "00" + str(milisegs)
-#        else:
-#            milisegs = str(milisegs)
-
-        return mins + ":" + segs #+ "." + milisegs
-
+        mins_s = f"{mins:02d}"
+        segs_s = f"{segs:02d}"
+        return f"{mins_s}:{segs_s}"

@@ -1,13 +1,13 @@
-from pysqlite2 import dbapi2 as sqlite
-from config import connection_string
+import sqlite3
+
+from data.config import connection_string
+
 
 def connected(f):
-    """
-        A new connection to the database
-    """
-    def wrapper(self, *args):
-        self.conection = sqlite.connect(connection_string)
+    """Open a fresh sqlite connection on the wrapped instance before delegating."""
+    def wrapper(self, *args, **kwargs):
+        self.conection = sqlite3.connect(connection_string)
         self.query = self.conection.cursor()
-        return f(self, *args)
+        return f(self, *args, **kwargs)
 
     return wrapper

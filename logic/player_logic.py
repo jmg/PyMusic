@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
-import random
 import os
+import random
 
-from player.gstreamer import mp3player
 from data.db import dataBase
 from data.SongsFactory import SongsFactory
 from data.RadiosFactory import RadiosFactory
-import data.utils
-from config import Modes, ManagerModes
+from logic.config import Modes, ManagerModes
 from lyrics.engine import LyricsSearcher
+from player.gstreamer import mp3player
 
-from alchemy.factory import *
-from alchemy.model import *
+from alchemy.factory import Factory_songs
 
-class PlayerLogic(object):
+
+class PlayerLogic:
 
     player = mp3player()
     modes = Modes()
@@ -34,10 +33,8 @@ class PlayerLogic(object):
         self.man_mode = man_mode
 
     def play(self, song, next=None):
-
         self.id = self._generate_id()
         self.player.stop()
-
         self.player.play(song, next, self.id)
         return self.id
 
@@ -57,20 +54,18 @@ class PlayerLogic(object):
         return self.player.isPlaying()
 
     def _generate_id(self):
-        return random.randint(0,1000000000)
+        return random.randint(0, 1000000000)
 
     def random_song(self, current_index, max):
         if max > 1:
-            randomSong = random.randint(0,max)
+            randomSong = random.randint(0, max)
             while randomSong == current_index:
-                randomSong = random.randint(0,max)
+                randomSong = random.randint(0, max)
             return randomSong
         return False
 
     def check_exists(self, path):
-        if not os.path.exists(path):
-            return False
-        return True
+        return os.path.exists(path)
 
     def change_volume(self, value):
         self.player.change_volume(value)
@@ -80,7 +75,7 @@ class PlayerLogic(object):
         return lyric.get_lyrics()
 
 
-class PlayerDataLogic(object):
+class PlayerDataLogic:
 
     db = dataBase()
     factory_songs = SongsFactory()
@@ -118,4 +113,3 @@ class PlayerDataLogic(object):
 
     def list_dir(self, dir):
         return Factory_songs().list_dir(dir)
-

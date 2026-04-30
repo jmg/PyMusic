@@ -1,18 +1,14 @@
-from clases.clases import Radio
-from connection import connected
+from data.clases.clases import Radio
+from data.connection import connected
 
-class RadiosFactory(object):
+
+class RadiosFactory:
 
     def _make_object(self, *args):
-        radio = Radio(*args)
-        return radio
+        return Radio(*args)
 
     def _make_objects(self, rows):
-        objetcs = []
-        for row in rows:
-            obj = self._make_object(*row)
-            objetcs.append(obj)
-        return objetcs
+        return [self._make_object(*row) for row in rows]
 
     @connected
     def create_table(self):
@@ -27,20 +23,18 @@ class RadiosFactory(object):
 
     @connected
     def insert(self, radio):
-        sintax = """INSERT INTO radios ('radio', 'interpret', 'album', 'year') values
-        ('%s','%s','%s','%s')""" % (radio, "", "", "")
-        self.query.execute(sintax)
+        self.query.execute(
+            "INSERT INTO radios (radio, interpret, album, year) values (?, ?, ?, ?)",
+            (radio, "", "", ""))
         self.conection.commit()
 
     @connected
     def fetch_all(self):
-        sintax = """select id, radio, interpret, album, year from radios order by id"""
-        self.query.execute(sintax)
-        radios = self.query.fetchall()
-        return self._make_objects(radios)
+        self.query.execute(
+            "select id, radio, interpret, album, year from radios order by id")
+        return self._make_objects(self.query.fetchall())
 
     @connected
     def delete(self, id):
-        sintax = """DELETE from radios where id = '%s'""" % id
-        self.query.execute(sintax)
+        self.query.execute("DELETE from radios where id = ?", (id,))
         self.conection.commit()

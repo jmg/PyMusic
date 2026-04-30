@@ -1,19 +1,20 @@
-import Queue
-from terra import LyricsTerra
-from generics.multiprogramming import threaded
+import queue
 
-queue = Queue.Queue()
+from generics.multiprogramming import threaded
+from lyrics.terra import LyricsTerra
+
+_results = queue.Queue()
+
 
 @threaded
 def worker(Resource, song, artist):
-
     lyrics = Resource(song, artist)
-    queue.put(lyrics.parse_lyrics())
+    _results.put(lyrics.parse_lyrics())
 
 
-class LyricsSearcher(object):
+class LyricsSearcher:
 
-    resources = [LyricsTerra, ]
+    resources = [LyricsTerra]
 
     def __init__(self, song, artist):
         self.song = song
@@ -22,4 +23,4 @@ class LyricsSearcher(object):
     def get_lyrics(self):
         for resource in self.resources:
             worker(resource, self.song, self.artist)
-        return queue.get()
+        return _results.get()

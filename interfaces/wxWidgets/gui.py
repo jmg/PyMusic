@@ -18,7 +18,7 @@ class wxGui ( wx.Frame ):
     def __init__( self, parent ):
         wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Py Music", pos = wx.DefaultPosition, size = wx.Size( -1,-1 ), style = wx.DEFAULT_FRAME_STYLE|wx.MAXIMIZE|wx.SYSTEM_MENU|wx.TAB_TRAVERSAL )
 
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+        self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
         bSizer1 = wx.BoxSizer( wx.HORIZONTAL )
 
@@ -147,23 +147,23 @@ class wxGui ( wx.Frame ):
         self.SetSizer( bSizer1 )
         self.Layout()
         bSizer1.Fit( self )
-        self.m_statusBar1 = self.CreateStatusBar( 1, wx.ST_SIZEGRIP, wx.ID_ANY )
+        self.m_statusBar1 = self.CreateStatusBar( 1, getattr(wx, 'STB_SIZEGRIP', 0), wx.ID_ANY )
         self.mnBar = wx.MenuBar( 0 )
         self.mnFile = wx.Menu()
         self.itAddList = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Add List", wx.EmptyString, wx.ITEM_NORMAL )
-        self.mnFile.AppendItem( self.itAddList )
+        self.mnFile.Append( self.itAddList )
 
         self.itAddRadio = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Add Radio", wx.EmptyString, wx.ITEM_NORMAL )
-        self.mnFile.AppendItem( self.itAddRadio )
+        self.mnFile.Append( self.itAddRadio )
 
         self.itGenList = wx.MenuItem( self.mnFile, wx.ID_ANY, u"Generate List", wx.EmptyString, wx.ITEM_NORMAL )
-        self.mnFile.AppendItem( self.itGenList )
+        self.mnFile.Append( self.itGenList )
 
         self.mnBar.Append( self.mnFile, u"File" )
 
         self.mnView = wx.Menu()
         self.itAddList1 = wx.MenuItem( self.mnView, wx.ID_ANY, u"Lyrics", wx.EmptyString, wx.ITEM_NORMAL )
-        self.mnView.AppendItem( self.itAddList1 )
+        self.mnView.Append( self.itAddList1 )
 
         self.mnBar.Append( self.mnView, u"View" )
 
