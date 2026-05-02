@@ -1,7 +1,7 @@
 from wx import App
 
 from lyrics.GUI import LyricReader
-from lyrics.terra import LyricsTerra
+from lyrics.lrclib import LyricsLRCLIB
 
 
 class pyLyricReader(LyricReader):
@@ -28,7 +28,7 @@ class pyLyricReader(LyricReader):
         artist = self.tbArtista.GetValue()
         song = self.tbTema.GetValue()
 
-        lyrics = LyricsTerra(song, artist)
+        lyrics = LyricsLRCLIB(song, artist)
         self.tbLyric.SetValue(lyrics.parse_lyrics())
 
 

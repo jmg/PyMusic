@@ -68,7 +68,22 @@ class mp3player:
 
     def change_volume(self, volume):
         if self.player:
-            self.player.audio_set_volume(int(volume * 100))
+            self.player.audio_set_volume(max(0, min(200, int(volume * 100))))
+
+    def set_equalizer(self, gains):
+        """gains: list of 10 dB values (-20..+20). Pass None to disable."""
+        if not self.player or not _VLC_AVAILABLE:
+            return
+        try:
+            if gains is None:
+                self.player.set_equalizer(None)
+                return
+            eq = vlc.AudioEqualizer()
+            for i, g in enumerate(gains[:10]):
+                eq.set_amp_at_index(float(g), i)
+            self.player.set_equalizer(eq)
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
     # Position queries

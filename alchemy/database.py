@@ -63,3 +63,26 @@ def init_db():
     if _engine is None:
         _engine = _build_engine()
     BaseObject.metadata.create_all(_engine)
+    _migrate_songs()
+
+
+def _migrate_songs():
+    """Add columns introduced after the original schema (idempotent)."""
+    from sqlalchemy import text
+    new_columns = [
+        ("title", "VARCHAR(120)"),
+        ("duration", "INTEGER"),
+        ("play_count", "INTEGER DEFAULT 0"),
+        ("added_at", "INTEGER"),
+        ("last_played", "INTEGER"),
+    ]
+    with _engine.begin() as conn:
+        existing = {
+            row[1] for row in conn.exec_driver_sql("PRAGMA table_info(songs)")
+        }
+        for col, ddl in new_columns:
+            if col not in existing:
+                try:
+                    conn.exec_driver_sql(f"ALTER TABLE songs ADD COLUMN {col} {ddl}")
+                except Exception:
+                    pass

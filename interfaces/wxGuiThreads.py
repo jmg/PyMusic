@@ -14,10 +14,27 @@ class ShowPosThread(threading.Thread):
         self.id = id
 
     def run(self):
+        total = None
+        for _ in range(50):
+            try:
+                dur_ns = self.player.getSeekableDuration()
+                if dur_ns and dur_ns > 0:
+                    total = self.player.convertTime(dur_ns)
+                    break
+            except Exception:
+                pass
+            time.sleep(0.1)
+
+        if isinstance(self.clock, wx.TextCtrl):
+            setter = self.clock.SetValue
+        else:
+            setter = self.clock.SetLabel
+
         while (self.player.isPlaying() or self.player.isPaused()) and self.id == self.player.id:
             position = self.player.getPosition()
             if position:
-                wx.CallAfter(self.clock.SetValue, position)
+                label = f"{position} / {total}" if total else position
+                wx.CallAfter(setter, label)
             time.sleep(0.5)
 
 

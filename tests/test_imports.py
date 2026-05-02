@@ -23,7 +23,7 @@ PURE_MODULES = [
     "alchemy.database",
     "alchemy.factory",
     "lyrics.utils",
-    "lyrics.terra",
+    "lyrics.lrclib",
     "lyrics.engine",
     "visual.fractals.lindenmayer",
     "visual.fractals.FractalGen",

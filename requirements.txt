@@ -2,6 +2,8 @@
 #
 # Mandatory
 SQLAlchemy>=2.0
+mutagen>=1.47
+jeepney>=0.8  # MPRIS / D-Bus integration (Linux)
 
 # GUI backends (install whichever matches the entry point you want to use)
 #   run.py       -> wxPython

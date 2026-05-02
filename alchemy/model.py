@@ -16,13 +16,25 @@ class Song(BaseObject):
     artist = Column('interpret', String(50))
     album = Column(String(50))
     year = Column(Integer)
+    title = Column(String(120))
+    duration = Column(Integer)        # seconds
+    play_count = Column(Integer, default=0)
+    added_at = Column(Integer)        # unix epoch
+    last_played = Column(Integer)     # unix epoch
 
-    def __init__(self, id=None, path='', artist='', album='', year=''):
+    def __init__(self, id=None, path='', artist='', album='', year='',
+                 title='', duration=None, play_count=0,
+                 added_at=None, last_played=None):
         self.id = id
         self.path = path
         self.artist = artist
         self.album = album
         self.year = year
+        self.title = title
+        self.duration = duration
+        self.play_count = play_count or 0
+        self.added_at = added_at
+        self.last_played = last_played
 
 
 class Radio(BaseObject):

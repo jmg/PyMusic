@@ -22,6 +22,12 @@ class Factory:
     def commit(self):
         self.session.commit()
 
+    def delete_by_id(self, id):
+        obj = self.session.query(self.model).get(id)
+        if obj is not None:
+            self.session.delete(obj)
+            self.session.commit()
+
 
 class Factory_songs(Factory):
 
@@ -47,3 +53,30 @@ class Factory_songs(Factory):
     def list_dir(self, dir):
         songs_list = utils.list_dir(dir)
         return self._make_objects(songs_list)
+
+    def list_files(self, paths):
+        songs_list = utils.list_files(paths)
+        return self._make_objects(songs_list)
+
+    def bump_play_count(self, song_id):
+        import time as _t
+        obj = self.session.query(self.model).get(song_id)
+        if obj is not None:
+            obj.play_count = (obj.play_count or 0) + 1
+            obj.last_played = int(_t.time())
+            self.session.commit()
+
+    def smart_filter(self, kind, limit=200):
+        q = self.session.query(self.model)
+        if kind == "recent":
+            q = q.order_by(self.model.added_at.desc().nullslast())
+        elif kind == "most_played":
+            q = q.filter((self.model.play_count != None) & (self.model.play_count > 0))  # noqa: E711
+            q = q.order_by(self.model.play_count.desc())
+        elif kind == "never_played":
+            q = q.filter((self.model.play_count == None) | (self.model.play_count == 0))  # noqa: E711
+        elif kind == "last_played":
+            q = q.filter(self.model.last_played != None).order_by(  # noqa: E711
+                self.model.last_played.desc()
+            )
+        return q.limit(limit).all()

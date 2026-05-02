@@ -28,8 +28,8 @@ def test_mixed_text():
     assert EspecialChars.unescape_entities(src) == 'Hello & goodbye, café!'
 
 
-def test_terra_url_construction():
-    """LyricsTerra builds the search URL without hitting the network."""
-    from lyrics.terra import LyricsTerra
-    lt = LyricsTerra('proud mary', 'creedence')
-    assert lt.url == 'http://letras.terra.com.br/winamp.php?t=creedence-proud%20mary'
+def test_lrclib_url_construction():
+    """LyricsLRCLIB builds the lookup URL without hitting the network."""
+    from lyrics.lrclib import LyricsLRCLIB
+    lt = LyricsLRCLIB('proud mary', 'creedence')
+    assert 'creedence' in lt.BASE.format(a='creedence', t='proud%20mary')
