@@ -23,7 +23,7 @@ class frmLogo ( wx.Frame ):
         bSizer18 = wx.BoxSizer( wx.VERTICAL )
 
         self.bmLogo = wx.StaticBitmap( self, wx.ID_ANY, wx.Bitmap( u"logo.bmp", wx.BITMAP_TYPE_ANY ), wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer18.Add( self.bmLogo, 1, wx.ALL|wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        bSizer18.Add( self.bmLogo, 1, wx.ALL|wx.EXPAND, 5 )
 
         self.SetSizer( bSizer18 )
         self.Layout()

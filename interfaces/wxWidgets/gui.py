@@ -67,7 +67,7 @@ class wxGui ( wx.Frame ):
         bSizer21.Add( self.m_staticText1, 0, wx.ALL|wx.ALIGN_CENTER_VERTICAL, 5 )
 
         self.tbFinder = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer21.Add( self.tbFinder, 1, wx.ALIGN_CENTER_VERTICAL|wx.EXPAND|wx.TOP|wx.BOTTOM, 5 )
+        bSizer21.Add( self.tbFinder, 1, wx.EXPAND|wx.TOP|wx.BOTTOM, 5 )
 
         bSizer16.Add( bSizer21, 0, wx.EXPAND, 5 )
 
@@ -113,7 +113,7 @@ class wxGui ( wx.Frame ):
         bSizer8.Fit( self.pnRadios )
         self.ntDown.AddPage( self.pnRadios, u"Radios", False )
 
-        bSizer6.Add( self.ntDown, 1, wx.EXPAND|wx.ALL|wx.ALIGN_CENTER_HORIZONTAL, 5 )
+        bSizer6.Add( self.ntDown, 1, wx.EXPAND|wx.ALL, 5 )
 
         bSizer4.Add( bSizer6, 1, wx.EXPAND, 5 )
 

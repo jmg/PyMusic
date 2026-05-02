@@ -35,13 +35,13 @@ class MoveBarThread(threading.Thread):
         for _ in range(50):
             try:
                 duration = self.player.getSeekableDuration()
-                if duration:
+                if duration and duration > 0:
                     break
             except Exception:
                 pass
             time.sleep(0.1)
 
-        if duration is None or duration == -1:
+        if not duration or duration <= 0:
             return
 
         wx.CallAfter(self.bar.SetRange, 0, duration // 1000)

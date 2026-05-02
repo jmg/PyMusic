@@ -5,6 +5,7 @@ import wx
 
 from interfaces.wxWidgets.gui import wxGui
 from interfaces.wxWidgets.logo import frmLogo
+from interfaces.visualization import VisualizationDisplay
 from interfaces.wxFrmAddRadio import wxFrmAddRadio
 from interfaces.wxFrmGenList import wxFrmGenList
 from interfaces.Notify import SongNotify
@@ -55,6 +56,11 @@ class MainWindow(wxGui):
         self.lbRadios.SetColumnWidth(0, 400)
 
         frmlogo.Hide()
+
+        visual_sizer = self.pnVisual.GetSizer()
+        self.visualization = VisualizationDisplay(self.pnVisual, wx.ID_ANY, visual_sizer)
+        visual_sizer.Add(self.visualization, 1, wx.EXPAND | wx.ALL, 0)
+        self.pnVisual.Layout()
 
     # ------------------------------------------------------------------
     # Event handlers
@@ -182,6 +188,8 @@ class MainWindow(wxGui):
         self.moveBarThread = MoveBarThread(self.slPosition, self.logic.player, id)
         self.moveBarThread.start()
 
+        self.visualization.start()
+
     def play_radio(self, event):
         index, radio_to_play = self.radio_to_play()
         self.id = self.logic.play(radio_to_play, self.next)
@@ -189,6 +197,7 @@ class MainWindow(wxGui):
 
     def stop(self, event):
         self.logic.stop()
+        self.visualization.stop()
 
     def pause(self, event):
         self.logic.pause()
@@ -227,14 +236,17 @@ class MainWindow(wxGui):
 
     def set_song(self, index):
         """Select a song in the list, update the title textbox and return its path."""
+        count = self.get_list_len()
+        if count == 0:
+            return None
+        if index < 0 or index >= count:
+            index = 0
+
         SEL_FOC = wx.LIST_STATE_SELECTED | wx.LIST_STATE_FOCUSED
         current_index = self.lbSongs.GetFirstSelected()
-        self.lbSongs.SetItemState(current_index, 0, wx.LIST_STATE_SELECTED)
-
-        if index < self.get_list_len() - 1:
-            self.lbSongs.SetItemState(index, SEL_FOC, SEL_FOC)
-        else:
-            self.lbSongs.SetItemState(0, SEL_FOC, SEL_FOC)
+        if current_index >= 0:
+            self.lbSongs.SetItemState(current_index, 0, wx.LIST_STATE_SELECTED)
+        self.lbSongs.SetItemState(index, SEL_FOC, SEL_FOC)
 
         song_to_play = self.lbSongs.GetItem(index, 0).GetText()
         title_of_song = self.lbSongs.GetItem(index, 1).GetText()
@@ -261,7 +273,11 @@ class MainWindow(wxGui):
 
     def song_to_play(self):
         """Select the current song to play."""
+        if self.get_list_len() == 0:
+            return -1, None
         index = self.lbSongs.GetFirstSelected()
+        if index < 0:
+            index = 0
         song_to_play = self.set_song(index)
 
         while not self.check_exists(song_to_play):

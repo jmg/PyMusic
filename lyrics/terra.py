@@ -23,8 +23,7 @@ class LyricsTerra:
             lyrics = re.split('</p>', parts[1])[0]
             lyrics = re.sub('<[Bb][Rr]/>', '', lyrics)
             lyrics = EspecialChars.unescape_entities(lyrics)
-        except Exception as e:
-            print(e)
+        except Exception:
             lyrics = "No se encontraron letras"
 
         return lyrics

@@ -9,8 +9,10 @@ SQLAlchemy>=2.0
 wxPython>=4.2
 PyGObject>=3.42
 
-# Audio backend (used by player.gstreamer); requires GStreamer 1.0 from the
-# system. The optional pygame backend lives in player.mp3player.
+# Audio backend. Default backend is player.vlc_backend (requires VLC from the
+# system, e.g. `apt install vlc`). Alternatives: player.gstreamer (needs
+# PyGObject + GStreamer system libs), player.mp3player (pygame-based, limited).
+python-vlc>=3.0
 pygame>=2.1
 
 # Visualisation (Lindenmayer fractal pencil)

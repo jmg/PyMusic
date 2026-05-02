@@ -9,7 +9,7 @@ from data.SongsFactory import SongsFactory
 from data.RadiosFactory import RadiosFactory
 from logic.config import Modes, ManagerModes
 from lyrics.engine import LyricsSearcher
-from player.gstreamer import mp3player
+from player.vlc_backend import mp3player
 
 
 class PlayerLogic:
